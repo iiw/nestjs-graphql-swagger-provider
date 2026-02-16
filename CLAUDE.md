@@ -19,8 +19,15 @@ nestjs-graphql-swagger-provider — a CLI code generator that reads a Swagger/Op
 
 - **CLI package**: distributed via npm, invoked with `npx`. No runtime dependency for consumers — this is a code generator only.
 - **Source**: `src/` directory, CLI source in `src/cli/`
-- **Tests**: colocated as `*.spec.ts` files next to source
+- **Tests**: colocated as `*.spec.ts` files next to source. Fixture-based: feed sample `swagger.json` files and verify generated output.
 - **TypeScript**: strict mode, decorators enabled (`experimentalDecorators` + `emitDecoratorMetadata`)
+
+### Key dependencies (this CLI tool)
+
+- `commander` — CLI argument parsing
+- `ts-morph` — AST-based TypeScript code generation for NestJS modules
+- `@apidevtools/swagger-parser` — parse and validate OpenAPI specs
+- `swagger-typescript-api` — generate the REST client from OpenAPI
 
 ## Architecture (rules)
 
@@ -73,3 +80,6 @@ The generated code requires these packages in the consuming project:
 - Generated services use the REST client to proxy requests to the original API
 - Generated code is organized by feature (one folder per Swagger controller)
 - The Swagger REST client is placed in a single file for easy regeneration
+- **OpenAPI 3.1** only
+- **Overwrite** on regeneration — no prompts, no skip logic
+- If error responses are declared in the OpenAPI spec, generate corresponding error handling in services; otherwise let exceptions propagate
