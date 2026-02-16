@@ -18,7 +18,7 @@ nestjs-graphql-swagger-provider — a CLI code generator that reads a Swagger/Op
 ## Architecture
 
 - **CLI package**: distributed via npm, invoked with `npx`. No runtime dependency for consumers — this is a code generator only.
-- **Source**: `src/` directory, CLI source in `src/cli/`
+- **Source**: `src/` directory, CLI source in `src/cli/`. Prefer small, focused files — split by responsibility where possible.
 - **Tests**: colocated as `*.spec.ts` files next to source. Fixture-based: feed sample `swagger.json` files and verify generated output.
 - **TypeScript**: strict mode, decorators enabled (`experimentalDecorators` + `emitDecoratorMetadata`)
 
