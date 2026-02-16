@@ -2,6 +2,10 @@ import { type SourceFile, StructureKind } from 'ts-morph';
 import type { ParsedController, ParsedProperty, ParsedSchema } from '../parser/types.js';
 import { graphqlTypeForProperty, tsTypeForProperty } from './utils.js';
 
+function needsExplicitType(prop: ParsedProperty, gqlType: string): boolean {
+  return prop.isArray || gqlType === 'Float' || prop.type === 'enum';
+}
+
 function addFieldDecorator(
   prop: ParsedProperty,
   decorators: { name: string; arguments: string[] }[],
@@ -22,14 +26,14 @@ function addFieldDecorator(
     } else {
       decorators.push({ name: 'Field', arguments: [`() => [${gqlType}]`] });
     }
-  } else if (gqlType === 'Float') {
+  } else if (needsExplicitType(prop, gqlType)) {
     if (options.length > 0) {
       decorators.push({
         name: 'Field',
-        arguments: [`() => Float`, `{ ${options.join(', ')} }`],
+        arguments: [`() => ${gqlType}`, `{ ${options.join(', ')} }`],
       });
     } else {
-      decorators.push({ name: 'Field', arguments: [`() => Float`] });
+      decorators.push({ name: 'Field', arguments: [`() => ${gqlType}`] });
     }
   } else if (options.length > 0) {
     decorators.push({ name: 'Field', arguments: [`{ ${options.join(', ')} }`] });
@@ -55,6 +59,21 @@ function buildPropertyDeclaration(prop: ParsedProperty) {
   };
 }
 
+function collectEnumNames(properties: ParsedProperty[]): Set<string> {
+  const names = new Set<string>();
+  for (const prop of properties) {
+    if (prop.type === 'enum' && prop.enumName) {
+      names.add(prop.enumName);
+    }
+    if (prop.properties) {
+      for (const name of collectEnumNames(prop.properties)) {
+        names.add(name);
+      }
+    }
+  }
+  return names;
+}
+
 export function generateModels(
   sourceFile: SourceFile,
   controller: ParsedController,
@@ -73,6 +92,21 @@ export function generateModels(
     moduleSpecifier: '@nestjs/graphql',
     namedImports: ['ObjectType', 'Field', 'Float'],
   });
+
+  // Collect all enum names used in model properties
+  const allEnumNames = new Set<string>();
+  for (const schema of schemaMap.values()) {
+    for (const name of collectEnumNames(schema.properties)) {
+      allEnumNames.add(name);
+    }
+  }
+
+  if (allEnumNames.size > 0) {
+    sourceFile.addImportDeclaration({
+      moduleSpecifier: '../enums',
+      namedImports: Array.from(allEnumNames).sort(),
+    });
+  }
 
   for (const [name, schema] of schemaMap) {
     sourceFile.addClass({

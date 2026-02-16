@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { generate } from './generate.js';
 
 const FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore.json');
+const ENUM_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-enums.json');
 
 describe('generate', () => {
   let outputDir: string;
@@ -119,5 +120,102 @@ describe('generate', () => {
     expect(moduleContent).toContain('@Module(');
     expect(moduleContent).toContain('PetsResolver');
     expect(moduleContent).toContain('PetsService');
+  });
+
+  it('should not generate enums.ts when spec has no enums', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const enumsPath = path.join(outputDir, 'enums.ts');
+    expect(fs.existsSync(enumsPath)).toBe(false);
+  });
+});
+
+describe('generate with enums', () => {
+  let outputDir: string;
+
+  beforeEach(() => {
+    outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nestjs-graphql-enum-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  it('should generate enums.ts at the output root', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const enumsPath = path.join(outputDir, 'enums.ts');
+    expect(fs.existsSync(enumsPath)).toBe(true);
+  });
+
+  it('should generate enum declarations with registerEnumType', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
+    expect(content).toContain('registerEnumType');
+    expect(content).toContain('enum PetStatus');
+    expect(content).toContain('enum Priority');
+  });
+
+  it('should generate named string enum members correctly', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
+    expect(content).toContain("Available = 'available'");
+    expect(content).toContain("Pending = 'pending'");
+    expect(content).toContain("Sold = 'sold'");
+  });
+
+  it('should generate integer enum members correctly', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
+    expect(content).toContain('Value_1 = 1');
+    expect(content).toContain('Value_2 = 2');
+    expect(content).toContain('Value_3 = 3');
+  });
+
+  it('should generate inline enum (PetSize)', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
+    expect(content).toContain('enum PetSize');
+    expect(content).toContain("Small = 'small'");
+    expect(content).toContain("Medium = 'medium'");
+    expect(content).toContain("Large = 'large'");
+  });
+
+  it('should import enums in models that use enum fields', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(path.join(outputDir, 'pets', 'pets.models.ts'), 'utf-8');
+    expect(content).toContain("from '../enums'");
+    expect(content).toContain('PetStatus');
+  });
+
+  it('should use explicit enum type in @Field decorator for enum properties', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(path.join(outputDir, 'pets', 'pets.models.ts'), 'utf-8');
+    expect(content).toContain('() => PetStatus');
+  });
+
+  it('should import enums in DTOs that use enum fields', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(path.join(outputDir, 'pets', 'pets.dto.ts'), 'utf-8');
+    expect(content).toContain("from '../enums'");
+    expect(content).toContain('PetStatus');
+  });
+
+  it('should import enums in resolver when parameters use enums', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.resolver.ts'),
+      'utf-8',
+    );
+    expect(content).toContain("from '../enums'");
+    expect(content).toContain('PetStatus');
   });
 });

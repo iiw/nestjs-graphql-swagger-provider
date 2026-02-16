@@ -20,6 +20,9 @@ function buildResolverMethodParams(endpoint: ParsedEndpoint): {
   for (const param of endpoint.parameters) {
     let tsType: string;
     switch (param.type) {
+      case 'enum':
+        tsType = param.enumName ?? 'string';
+        break;
       case 'number':
         tsType = 'number';
         break;
@@ -31,10 +34,15 @@ function buildResolverMethodParams(endpoint: ParsedEndpoint): {
     }
     if (param.isArray) tsType = `${tsType}[]`;
 
+    const argsOptions: string[] = [`'${param.name}'`];
+    if (param.type === 'enum' && param.enumName) {
+      argsOptions.push(`{ type: () => ${param.enumName} }`);
+    }
+
     params.push({
       name: param.name,
       type: tsType,
-      decorators: [{ name: 'Args', arguments: [`'${param.name}'`] }],
+      decorators: [{ name: 'Args', arguments: argsOptions }],
     });
   }
 
@@ -92,6 +100,22 @@ export function generateResolver(
     sourceFile.addImportDeclaration({
       moduleSpecifier: `./${controller.name.toLowerCase()}.dto`,
       namedImports: dtoNames,
+    });
+  }
+
+  // Import enum types used in parameters
+  const enumNames = new Set<string>();
+  for (const endpoint of controller.endpoints) {
+    for (const param of endpoint.parameters) {
+      if (param.type === 'enum' && param.enumName) {
+        enumNames.add(param.enumName);
+      }
+    }
+  }
+  if (enumNames.size > 0) {
+    sourceFile.addImportDeclaration({
+      moduleSpecifier: '../enums',
+      namedImports: Array.from(enumNames).sort(),
     });
   }
 

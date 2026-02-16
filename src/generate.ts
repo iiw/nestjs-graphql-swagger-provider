@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import { IndentationText, Project, QuoteKind } from 'ts-morph';
 import { generateApiClient } from './generators/api-client.js';
 import { generateDtos } from './generators/dto.js';
+import { generateEnums } from './generators/enums.js';
 import { generateModels } from './generators/models.js';
 import { generateModule } from './generators/module.js';
 import { generateResolver } from './generators/resolver.js';
@@ -27,6 +28,16 @@ export async function generate(input: string, output: string): Promise<void> {
       indentationText: IndentationText.TwoSpaces,
     },
   });
+
+  if (spec.enums.length > 0) {
+    console.log('Generating enums...');
+    const enumsFile = project.createSourceFile(
+      path.join(outputDir, 'enums.ts'),
+      '',
+      { overwrite: true },
+    );
+    generateEnums(enumsFile, spec.enums);
+  }
 
   for (const controller of spec.controllers) {
     const controllerDir = path.join(outputDir, toKebabCase(controller.name));

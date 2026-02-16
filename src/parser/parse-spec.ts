@@ -3,12 +3,14 @@ import type { OpenAPIV3_1 } from 'openapi-types';
 import type {
   ParsedController,
   ParsedEndpoint,
+  ParsedEnum,
   ParsedErrorResponse,
   ParsedParameter,
   ParsedProperty,
   ParsedSchema,
   ParsedSpec,
 } from './types.js';
+import { deriveEnumName } from '../generators/enum-utils.js';
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'] as const;
 
@@ -25,6 +27,9 @@ function mapOpenApiType(schema: OpenAPIV3_1.SchemaObject): { type: string; isArr
   switch (schema.type) {
     case 'integer':
     case 'number':
+      if (schema.enum) {
+        return { type: 'enum', isArray: false };
+      }
       return { type: 'number', isArray: false };
     case 'boolean':
       return { type: 'boolean', isArray: false };
@@ -39,7 +44,11 @@ function mapOpenApiType(schema: OpenAPIV3_1.SchemaObject): { type: string; isArr
   }
 }
 
-function extractProperties(schema: OpenAPIV3_1.SchemaObject): ParsedProperty[] {
+function extractProperties(
+  schema: OpenAPIV3_1.SchemaObject,
+  parentName?: string,
+  namedEnumLookup?: Map<string, string>,
+): ParsedProperty[] {
   if (!schema.properties) return [];
 
   const requiredSet = new Set(schema.required ?? []);
@@ -59,11 +68,19 @@ function extractProperties(schema: OpenAPIV3_1.SchemaObject): ParsedProperty[] {
     };
 
     if (mapped.type === 'enum' && prop.enum) {
-      parsedProp.enumValues = prop.enum as string[];
+      parsedProp.enumValues = prop.enum as (string | number)[];
+
+      // Try to find a named enum from the lookup (recovered from $ref names)
+      const enumKey = JSON.stringify(prop.enum);
+      if (namedEnumLookup?.has(enumKey)) {
+        parsedProp.enumName = namedEnumLookup.get(enumKey)!;
+      } else if (parentName) {
+        parsedProp.enumName = deriveEnumName(parentName, name);
+      }
     }
 
     if (mapped.type === 'object' && prop.properties) {
-      parsedProp.properties = extractProperties(prop);
+      parsedProp.properties = extractProperties(prop, parentName, namedEnumLookup);
     }
 
     return parsedProp;
@@ -83,6 +100,7 @@ function schemaToName(path: string, method: string, suffix: string): string {
 function extractSchema(
   schema: OpenAPIV3_1.SchemaObject | undefined,
   name: string,
+  namedEnumLookup?: Map<string, string>,
 ): ParsedSchema | undefined {
   if (!schema) return undefined;
 
@@ -91,19 +109,21 @@ function extractSchema(
     if (items) {
       return {
         name,
-        properties: extractProperties(items),
+        properties: extractProperties(items, name, namedEnumLookup),
       };
     }
   }
 
   return {
     name,
-    properties: extractProperties(schema),
+    properties: extractProperties(schema, name, namedEnumLookup),
   };
 }
 
 function extractParameters(
   params: (OpenAPIV3_1.ParameterObject | OpenAPIV3_1.ReferenceObject)[] | undefined,
+  operationId: string,
+  namedEnumLookup?: Map<string, string>,
 ): ParsedParameter[] {
   if (!params) return [];
 
@@ -114,19 +134,32 @@ function extractParameters(
       const schema = p.schema as OpenAPIV3_1.SchemaObject | undefined;
       const mapped = schema ? mapOpenApiType(schema) : { type: 'string', isArray: false };
 
-      return {
+      const parsedParam: ParsedParameter = {
         name: p.name,
         location: p.in as 'path' | 'query',
         type: mapped.type,
         required: p.required === true,
         isArray: mapped.isArray,
       };
+
+      if (mapped.type === 'enum' && schema?.enum) {
+        parsedParam.enumValues = schema.enum as (string | number)[];
+        const enumKey = JSON.stringify(schema.enum);
+        if (namedEnumLookup?.has(enumKey)) {
+          parsedParam.enumName = namedEnumLookup.get(enumKey)!;
+        } else {
+          parsedParam.enumName = deriveEnumName(operationId, p.name);
+        }
+      }
+
+      return parsedParam;
     });
 }
 
 function extractRequestBody(
   requestBody: OpenAPIV3_1.RequestBodyObject | OpenAPIV3_1.ReferenceObject | undefined,
   name: string,
+  namedEnumLookup?: Map<string, string>,
 ): ParsedSchema | undefined {
   if (!requestBody || '$ref' in requestBody) return undefined;
 
@@ -134,12 +167,13 @@ function extractRequestBody(
   if (!jsonContent?.schema) return undefined;
 
   const schema = jsonContent.schema as OpenAPIV3_1.SchemaObject;
-  return extractSchema(schema, name);
+  return extractSchema(schema, name, namedEnumLookup);
 }
 
 function extractResponseSchema(
   responses: OpenAPIV3_1.ResponsesObject | undefined,
   name: string,
+  namedEnumLookup?: Map<string, string>,
 ): ParsedSchema | undefined {
   if (!responses) return undefined;
 
@@ -152,7 +186,7 @@ function extractResponseSchema(
   if (!jsonContent?.schema) return undefined;
 
   const schema = jsonContent.schema as OpenAPIV3_1.SchemaObject;
-  return extractSchema(schema, name);
+  return extractSchema(schema, name, namedEnumLookup);
 }
 
 function extractErrorResponses(
@@ -186,6 +220,7 @@ function extractErrorResponses(
 
 function extractGlobalSchemas(
   schemas: Record<string, OpenAPIV3_1.SchemaObject> | undefined,
+  namedEnumLookup?: Map<string, string>,
 ): ParsedSchema[] {
   if (!schemas) return [];
 
@@ -193,12 +228,109 @@ function extractGlobalSchemas(
     .filter(([, schema]) => schema.type === 'object' || schema.properties)
     .map(([name, schema]) => ({
       name,
-      properties: extractProperties(schema),
+      properties: extractProperties(schema, name, namedEnumLookup),
     }));
+}
+
+function buildNamedEnumLookup(
+  schemas: Record<string, OpenAPIV3_1.SchemaObject> | undefined,
+): Map<string, string> {
+  const lookup = new Map<string, string>();
+  if (!schemas) return lookup;
+
+  for (const [name, schema] of Object.entries(schemas)) {
+    if (schema.enum && (schema.type === 'string' || schema.type === 'integer' || schema.type === 'number')) {
+      const key = JSON.stringify(schema.enum);
+      lookup.set(key, name);
+    }
+  }
+
+  return lookup;
+}
+
+function extractGlobalEnums(
+  schemas: Record<string, OpenAPIV3_1.SchemaObject> | undefined,
+): ParsedEnum[] {
+  if (!schemas) return [];
+
+  const enums: ParsedEnum[] = [];
+
+  for (const [name, schema] of Object.entries(schemas)) {
+    if (schema.enum && (schema.type === 'string' || schema.type === 'integer' || schema.type === 'number')) {
+      enums.push({
+        name,
+        values: schema.enum as (string | number)[],
+        type: schema.type === 'number' ? 'integer' : (schema.type as 'string' | 'integer'),
+      });
+    }
+  }
+
+  return enums;
+}
+
+function collectInlineEnums(
+  controllers: ParsedController[],
+  schemas: ParsedSchema[],
+  globalEnumNames: Set<string>,
+): ParsedEnum[] {
+  const enumMap = new Map<string, ParsedEnum>();
+
+  function collectFromProperties(properties: ParsedProperty[]): void {
+    for (const prop of properties) {
+      if (prop.type === 'enum' && prop.enumName && prop.enumValues && !globalEnumNames.has(prop.enumName)) {
+        if (!enumMap.has(prop.enumName)) {
+          const enumType = prop.enumValues.every((v) => typeof v === 'number') ? 'integer' : 'string';
+          enumMap.set(prop.enumName, {
+            name: prop.enumName,
+            values: prop.enumValues,
+            type: enumType as 'string' | 'integer',
+          });
+        }
+      }
+      if (prop.properties) {
+        collectFromProperties(prop.properties);
+      }
+    }
+  }
+
+  for (const controller of controllers) {
+    for (const endpoint of controller.endpoints) {
+      if (endpoint.responseSchema) {
+        collectFromProperties(endpoint.responseSchema.properties);
+      }
+      if (endpoint.requestBody) {
+        collectFromProperties(endpoint.requestBody.properties);
+      }
+      for (const param of endpoint.parameters) {
+        if (param.type === 'enum' && param.enumName && param.enumValues && !globalEnumNames.has(param.enumName)) {
+          if (!enumMap.has(param.enumName)) {
+            const enumType = param.enumValues.every((v) => typeof v === 'number') ? 'integer' : 'string';
+            enumMap.set(param.enumName, {
+              name: param.enumName,
+              values: param.enumValues,
+              type: enumType as 'string' | 'integer',
+            });
+          }
+        }
+      }
+    }
+  }
+
+  for (const schema of schemas) {
+    collectFromProperties(schema.properties);
+  }
+
+  return Array.from(enumMap.values());
 }
 
 export async function parseSpec(input: string): Promise<ParsedSpec> {
   const api = (await SwaggerParser.dereference(input)) as OpenAPIV3_1.Document;
+
+  const componentSchemas =
+    (api.components?.schemas as Record<string, OpenAPIV3_1.SchemaObject>) ?? undefined;
+
+  // Build a lookup from serialized enum values → named schema name
+  const namedEnumLookup = buildNamedEnumLookup(componentSchemas);
 
   const controllerMap = new Map<string, ParsedEndpoint[]>();
 
@@ -219,14 +351,16 @@ export async function parseSpec(input: string): Promise<ParsedSpec> {
           method,
           operationId,
           summary: operation.summary,
-          parameters: extractParameters(operation.parameters),
+          parameters: extractParameters(operation.parameters, operationId, namedEnumLookup),
           requestBody: extractRequestBody(
             operation.requestBody as OpenAPIV3_1.RequestBodyObject | undefined,
             schemaToName(path, method, 'Input'),
+            namedEnumLookup,
           ),
           responseSchema: extractResponseSchema(
             operation.responses,
             schemaToName(path, method, 'Response'),
+            namedEnumLookup,
           ),
           errorResponses: extractErrorResponses(operation.responses),
         };
@@ -246,9 +380,13 @@ export async function parseSpec(input: string): Promise<ParsedSpec> {
     }),
   );
 
-  const schemas = extractGlobalSchemas(
-    (api.components?.schemas as Record<string, OpenAPIV3_1.SchemaObject>) ?? undefined,
-  );
+  const schemas = extractGlobalSchemas(componentSchemas, namedEnumLookup);
 
-  return { controllers, schemas };
+  // Collect enums: global (named in components/schemas) + inline
+  const globalEnums = extractGlobalEnums(componentSchemas);
+  const globalEnumNames = new Set(globalEnums.map((e) => e.name));
+  const inlineEnums = collectInlineEnums(controllers, schemas, globalEnumNames);
+  const enums = [...globalEnums, ...inlineEnums];
+
+  return { controllers, schemas, enums };
 }

@@ -1,5 +1,6 @@
 export { generate } from './generate.js';
 export type {
+  ParsedEnum,
   ParsedSpec,
   ParsedController,
   ParsedEndpoint,

@@ -1,3 +1,9 @@
+export interface ParsedEnum {
+  name: string;
+  values: (string | number)[];
+  type: 'string' | 'integer';
+}
+
 export interface ParsedProperty {
   name: string;
   type: string;
@@ -9,7 +15,9 @@ export interface ParsedProperty {
   /** Nested properties when this is an inline object */
   properties?: ParsedProperty[];
   /** Enum values when type is 'enum' */
-  enumValues?: string[];
+  enumValues?: (string | number)[];
+  /** Enum type name for referencing the generated TS enum */
+  enumName?: string;
 }
 
 export interface ParsedSchema {
@@ -23,6 +31,8 @@ export interface ParsedParameter {
   type: string;
   required: boolean;
   isArray: boolean;
+  enumName?: string;
+  enumValues?: (string | number)[];
 }
 
 export interface ParsedErrorResponse {
@@ -50,4 +60,5 @@ export interface ParsedController {
 export interface ParsedSpec {
   controllers: ParsedController[];
   schemas: ParsedSchema[];
+  enums: ParsedEnum[];
 }

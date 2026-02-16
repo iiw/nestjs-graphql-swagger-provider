@@ -16,8 +16,10 @@ export function toCamelCase(str: string): string {
   return pascal.charAt(0).toLowerCase() + pascal.slice(1);
 }
 
-export function graphqlTypeForProperty(prop: { type: string }): string {
+export function graphqlTypeForProperty(prop: { type: string; enumName?: string }): string {
   switch (prop.type) {
+    case 'enum':
+      return prop.enumName ?? 'String';
     case 'number':
       return 'Float';
     case 'boolean':
@@ -28,8 +30,10 @@ export function graphqlTypeForProperty(prop: { type: string }): string {
   }
 }
 
-export function tsTypeForProperty(prop: { type: string }): string {
+export function tsTypeForProperty(prop: { type: string; enumName?: string }): string {
   switch (prop.type) {
+    case 'enum':
+      return prop.enumName ?? 'string';
     case 'number':
       return 'number';
     case 'boolean':
