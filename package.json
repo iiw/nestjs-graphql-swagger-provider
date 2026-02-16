@@ -49,5 +49,11 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.55.0",
     "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "@apidevtools/swagger-parser": "^12.1.0",
+    "commander": "^14.0.3",
+    "swagger-typescript-api": "^13.2.18",
+    "ts-morph": "^27.0.2"
   }
 }
