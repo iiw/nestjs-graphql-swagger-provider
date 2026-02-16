@@ -4,3 +4,4 @@ coverage/
 *.tsbuildinfo
 .env
 claude.sh
+**/.DS_Store
