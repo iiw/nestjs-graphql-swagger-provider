@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-nestjs-graphql-swagger-provider — an NPM library for NestJS that bridges GraphQL and Swagger/OpenAPI documentation. Requires Node.js >= 24.
+nestjs-graphql-swagger-provider — a CLI code generator that reads a Swagger/OpenAPI spec and outputs NestJS GraphQL modules with a REST client. Requires Node.js >= 24.
 
 ## Commands
 
@@ -17,10 +17,9 @@ nestjs-graphql-swagger-provider — an NPM library for NestJS that bridges Graph
 
 ## Architecture
 
-- **Library package**: published as CommonJS with TypeScript declarations (`dist/`)
-- **Source**: `src/` directory, entry point is `src/index.ts`
+- **CLI package**: distributed via npm, invoked with `npx`. No runtime dependency for consumers — this is a code generator only.
+- **Source**: `src/` directory, CLI source in `src/cli/`
 - **Tests**: colocated as `*.spec.ts` files next to source
-- **Peer dependencies**: `@nestjs/common`, `@nestjs/core`, `reflect-metadata`, `rxjs` — consumers provide these
 - **TypeScript**: strict mode, decorators enabled (`experimentalDecorators` + `emitDecoratorMetadata`)
 
 ## Architecture (rules)
@@ -47,8 +46,28 @@ For each Swagger controller (e.g. `Users`), generates a feature folder:
     users.dto.ts
 ```
 
+### GraphQL approach
+
+- **Code-first** — generated code uses `@nestjs/graphql` decorators (`@ObjectType`, `@Field`, `@Query`, `@Mutation`, `@Args`, `@InputType`)
+
+### Swagger-to-GraphQL mapping
+
+- **GET** endpoints → `@Query()` resolvers
+- **POST / PUT / PATCH / DELETE** endpoints → `@Mutation()` resolvers
+- **Request body DTOs** → `@InputType()` classes
+- **Path and query parameters** → `@Args()` on resolver methods
+- **Response types** → `@ObjectType()` models
+
+### Generated code runtime dependencies
+
+The generated code requires these packages in the consuming project:
+- `@nestjs/common`, `@nestjs/core`, `@nestjs/graphql`
+- `axios` (used by the generated REST client)
+- `reflect-metadata`, `rxjs`
+
 ### Key rules
 
+- All generated output is TypeScript (`.ts` files)
 - Code generation is done via CLI only — users do not import this library as a project dependency
 - Library depends on `swagger-typescript-api` to generate the REST client from Swagger/OpenAPI
 - Generated services use the REST client to proxy requests to the original API

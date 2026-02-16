@@ -1,9 +1,10 @@
 {
   "name": "nestjs-graphql-swagger-provider",
   "version": "0.0.1",
-  "description": "NestJS library that bridges GraphQL and Swagger/OpenAPI documentation",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "description": "CLI code generator: Swagger/OpenAPI to NestJS GraphQL modules",
+  "bin": {
+    "nestjs-graphql-swagger-provider": "dist/cli/index.js"
+  },
   "files": [
     "dist"
   ],
@@ -35,12 +36,6 @@
   "homepage": "https://github.com/iiw/nestjs-graphql-swagger-provider#readme",
   "engines": {
     "node": ">=24.0.0"
-  },
-  "peerDependencies": {
-    "@nestjs/common": "^11.0.0",
-    "@nestjs/core": "^11.0.0",
-    "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
