@@ -58,6 +58,16 @@ export async function parseSpec(input: string): Promise<ParsedSpec> {
           errorResponses: extractErrorResponses(operation.responses),
         };
 
+        // Set extends from allOf inheritance
+        if (endpoint.responseSchema) {
+          const parent = refMap.schemaInheritance.get(endpoint.responseSchema.name);
+          if (parent) endpoint.responseSchema.extends = parent;
+        }
+        if (endpoint.requestBody) {
+          const parent = refMap.schemaInheritance.get(endpoint.requestBody.name);
+          if (parent) endpoint.requestBody.extends = parent;
+        }
+
         if (!controllerMap.has(tag)) {
           controllerMap.set(tag, []);
         }
@@ -74,6 +84,12 @@ export async function parseSpec(input: string): Promise<ParsedSpec> {
   );
 
   const schemas = extractGlobalSchemas(componentSchemas, refMap);
+
+  // Set extends from allOf inheritance on global schemas
+  for (const schema of schemas) {
+    const parent = refMap.schemaInheritance.get(schema.name);
+    if (parent) schema.extends = parent;
+  }
 
   // Collect enums: global (named in components/schemas) + inline
   const globalEnums = extractGlobalEnums(componentSchemas);

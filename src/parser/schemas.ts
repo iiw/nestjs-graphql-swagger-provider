@@ -43,7 +43,7 @@ export function extractGlobalSchemas(
   if (!schemas) return [];
 
   return Object.entries(schemas)
-    .filter(([, schema]) => schema.type === 'object' || schema.properties)
+    .filter(([, schema]) => schema.type === 'object' || schema.properties || schema.allOf)
     .map(([name, schema]) => ({
       name,
       properties: extractProperties(schema, name, refMap),

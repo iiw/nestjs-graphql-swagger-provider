@@ -5,6 +5,7 @@ import { parseSpec } from './parse-spec.js';
 const FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore.json');
 const ENUM_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-enums.json');
 const REFS_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-refs.json');
+const ALLOF_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-allof.json');
 
 describe('parseSpec', () => {
   it('should parse the petstore fixture into controllers', async () => {
@@ -279,5 +280,54 @@ describe('parseSpec $ref resolution', () => {
 
     const ownerStatusEnums = spec.enums.filter((e) => e.name === 'OwnerStatus');
     expect(ownerStatusEnums).toHaveLength(1);
+  });
+});
+
+describe('parseSpec allOf', () => {
+  it('should set extends on Dog response schema', async () => {
+    const spec = await parseSpec(ALLOF_FIXTURE_PATH);
+    const dogs = spec.controllers.find((c) => c.name === 'Dogs')!;
+    const getDog = dogs.endpoints.find((e) => e.operationId === 'getDog')!;
+
+    expect(getDog.responseSchema).toBeDefined();
+    expect(getDog.responseSchema!.name).toBe('Dog');
+    expect(getDog.responseSchema!.extends).toBe('Animal');
+  });
+
+  it('should include all merged properties on Dog response schema', async () => {
+    const spec = await parseSpec(ALLOF_FIXTURE_PATH);
+    const dogs = spec.controllers.find((c) => c.name === 'Dogs')!;
+    const getDog = dogs.endpoints.find((e) => e.operationId === 'getDog')!;
+
+    const propNames = getDog.responseSchema!.properties.map((p) => p.name);
+    expect(propNames).toContain('id');
+    expect(propNames).toContain('name');
+    expect(propNames).toContain('breed');
+  });
+
+  it('should set extends on global Dog schema', async () => {
+    const spec = await parseSpec(ALLOF_FIXTURE_PATH);
+    const dog = spec.schemas.find((s) => s.name === 'Dog');
+
+    expect(dog).toBeDefined();
+    expect(dog!.extends).toBe('Animal');
+  });
+
+  it('should set extends on CreateDogInput request body', async () => {
+    const spec = await parseSpec(ALLOF_FIXTURE_PATH);
+    const dogs = spec.controllers.find((c) => c.name === 'Dogs')!;
+    const createDog = dogs.endpoints.find((e) => e.operationId === 'createDog')!;
+
+    expect(createDog.requestBody).toBeDefined();
+    expect(createDog.requestBody!.name).toBe('CreateDogInput');
+    expect(createDog.requestBody!.extends).toBe('CreateAnimalInput');
+  });
+
+  it('should not set extends on Animal (no parent)', async () => {
+    const spec = await parseSpec(ALLOF_FIXTURE_PATH);
+    const animal = spec.schemas.find((s) => s.name === 'Animal');
+
+    expect(animal).toBeDefined();
+    expect(animal!.extends).toBeUndefined();
   });
 });

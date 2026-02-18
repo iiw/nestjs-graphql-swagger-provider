@@ -8,6 +8,8 @@ export interface RefMap {
   operationSchemas: Map<string, string>;
   /** operationId → (paramName → targetSchemaName) */
   parameterSchemas: Map<string, Map<string, string>>;
+  /** childSchemaName → parentSchemaName (from allOf with a $ref) */
+  schemaInheritance: Map<string, string>;
 }
 
 export function extractRefName(ref: string): string {
@@ -20,6 +22,7 @@ export async function buildRefMap(input: string): Promise<RefMap> {
   const schemaProperties = new Map<string, Map<string, string>>();
   const operationSchemas = new Map<string, string>();
   const parameterSchemas = new Map<string, Map<string, string>>();
+  const schemaInheritance = new Map<string, string>();
 
   // Walk components/schemas for property $refs
   const schemas = raw.components?.schemas as
@@ -29,6 +32,17 @@ export async function buildRefMap(input: string): Promise<RefMap> {
   if (schemas) {
     for (const [schemaName, schema] of Object.entries(schemas)) {
       if ('$ref' in schema) continue;
+
+      // Detect allOf inheritance: first $ref entry is the parent
+      if (schema.allOf && Array.isArray(schema.allOf)) {
+        const parentRef = schema.allOf.find(
+          (entry): entry is OpenAPIV3_1.ReferenceObject => '$ref' in entry,
+        );
+        if (parentRef) {
+          schemaInheritance.set(schemaName, extractRefName(parentRef.$ref));
+        }
+      }
+
       if (!schema.properties) continue;
 
       const propMap = new Map<string, string>();
@@ -150,5 +164,5 @@ export async function buildRefMap(input: string): Promise<RefMap> {
     }
   }
 
-  return { schemaProperties, operationSchemas, parameterSchemas };
+  return { schemaProperties, operationSchemas, parameterSchemas, schemaInheritance };
 }

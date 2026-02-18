@@ -4,6 +4,7 @@ import { buildRefMap, extractRefName } from './ref-resolver.js';
 
 const REFS_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-refs.json');
 const ENUM_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-enums.json');
+const ALLOF_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-allof.json');
 
 describe('extractRefName', () => {
   it('should extract the last segment of a $ref path', () => {
@@ -83,5 +84,27 @@ describe('buildRefMap', () => {
     const petProps = refMap.schemaProperties.get('Pet');
     expect(petProps!.has('id')).toBe(false);
     expect(petProps!.has('name')).toBe(false);
+  });
+});
+
+describe('buildRefMap schemaInheritance', () => {
+  it('should detect Dog as child of Animal', async () => {
+    const refMap = await buildRefMap(ALLOF_FIXTURE_PATH);
+    expect(refMap.schemaInheritance.get('Dog')).toBe('Animal');
+  });
+
+  it('should detect Cat as child of Animal', async () => {
+    const refMap = await buildRefMap(ALLOF_FIXTURE_PATH);
+    expect(refMap.schemaInheritance.get('Cat')).toBe('Animal');
+  });
+
+  it('should not have an inheritance entry for Animal', async () => {
+    const refMap = await buildRefMap(ALLOF_FIXTURE_PATH);
+    expect(refMap.schemaInheritance.has('Animal')).toBe(false);
+  });
+
+  it('should detect CreateDogInput as child of CreateAnimalInput', async () => {
+    const refMap = await buildRefMap(ALLOF_FIXTURE_PATH);
+    expect(refMap.schemaInheritance.get('CreateDogInput')).toBe('CreateAnimalInput');
   });
 });

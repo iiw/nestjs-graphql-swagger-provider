@@ -53,7 +53,7 @@ export async function generate(input: string, output: string): Promise<void> {
       '',
       { overwrite: true },
     );
-    generateModels(modelsFile, controller);
+    generateModels(modelsFile, controller, spec.schemas);
 
     // Generate DTOs
     const dtosFile = project.createSourceFile(
@@ -61,7 +61,7 @@ export async function generate(input: string, output: string): Promise<void> {
       '',
       { overwrite: true },
     );
-    generateDtos(dtosFile, controller);
+    generateDtos(dtosFile, controller, spec.schemas);
 
     // Generate service
     const serviceFile = project.createSourceFile(

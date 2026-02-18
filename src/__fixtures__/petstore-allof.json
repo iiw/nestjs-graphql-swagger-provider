@@ -1,0 +1,196 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Petstore with allOf",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://petstore.example.com/api/v1"
+    }
+  ],
+  "paths": {
+    "/animals": {
+      "get": {
+        "tags": ["Animals"],
+        "operationId": "listAnimals",
+        "summary": "List all animals",
+        "responses": {
+          "200": {
+            "description": "A list of animals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Animal"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dogs/{dogId}": {
+      "get": {
+        "tags": ["Dogs"],
+        "operationId": "getDog",
+        "summary": "Get a dog by ID",
+        "parameters": [
+          {
+            "name": "dogId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A dog",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dog"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dogs": {
+      "post": {
+        "tags": ["Dogs"],
+        "operationId": "createDog",
+        "summary": "Create a dog",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDogInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Dog created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dog"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cats/{catId}": {
+      "get": {
+        "tags": ["Cats"],
+        "operationId": "getCat",
+        "summary": "Get a cat by ID",
+        "parameters": [
+          {
+            "name": "catId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A cat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cat"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Animal": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Dog": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Animal"
+          },
+          {
+            "type": "object",
+            "required": ["breed"],
+            "properties": {
+              "breed": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "Cat": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Animal"
+          },
+          {
+            "type": "object",
+            "required": ["color"],
+            "properties": {
+              "color": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "CreateAnimalInput": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateDogInput": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/CreateAnimalInput"
+          },
+          {
+            "type": "object",
+            "required": ["breed"],
+            "properties": {
+              "breed": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

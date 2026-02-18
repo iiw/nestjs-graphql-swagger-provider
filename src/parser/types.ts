@@ -23,6 +23,8 @@ export interface ParsedProperty {
 export interface ParsedSchema {
   name: string;
   properties: ParsedProperty[];
+  /** Parent schema name from allOf composition */
+  extends?: string;
 }
 
 export interface ParsedParameter {

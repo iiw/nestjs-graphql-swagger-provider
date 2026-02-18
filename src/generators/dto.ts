@@ -77,12 +77,21 @@ function collectEnumNames(properties: ParsedProperty[]): Set<string> {
 export function generateDtos(
   sourceFile: SourceFile,
   controller: ParsedController,
+  globalSchemas: ParsedSchema[] = [],
 ): void {
   const schemaMap = new Map<string, ParsedSchema>();
 
   for (const endpoint of controller.endpoints) {
     if (endpoint.requestBody) {
       schemaMap.set(endpoint.requestBody.name, endpoint.requestBody);
+    }
+  }
+
+  // Ensure parent schemas are in the schemaMap
+  for (const schema of [...schemaMap.values()]) {
+    if (schema.extends && !schemaMap.has(schema.extends)) {
+      const parent = globalSchemas.find((s) => s.name === schema.extends);
+      if (parent) schemaMap.set(parent.name, parent);
     }
   }
 
@@ -108,12 +117,23 @@ export function generateDtos(
     });
   }
 
-  for (const [name, schema] of schemaMap) {
+  // Generate parent classes first, then children
+  const parents = [...schemaMap.entries()].filter(([, s]) => !s.extends);
+  const children = [...schemaMap.entries()].filter(([, s]) => s.extends);
+
+  for (const [name, schema] of [...parents, ...children]) {
+    const parentSchema = schema.extends ? schemaMap.get(schema.extends) : undefined;
+    const parentPropNames = new Set(parentSchema?.properties.map((p) => p.name) ?? []);
+    const ownProperties = parentSchema
+      ? schema.properties.filter((p) => !parentPropNames.has(p.name))
+      : schema.properties;
+
     sourceFile.addClass({
       name,
       isExported: true,
+      extends: schema.extends,
       decorators: [{ name: 'InputType', arguments: [] }],
-      properties: schema.properties.map(buildPropertyDeclaration),
+      properties: ownProperties.map(buildPropertyDeclaration),
     });
   }
 }
