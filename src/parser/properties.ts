@@ -1,12 +1,13 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ParsedProperty } from './types.js';
+import type { RefMap } from './ref-resolver.js';
 import { mapOpenApiType } from './type-mapping.js';
 import { deriveEnumName } from './enums.js';
 
 export function extractProperties(
   schema: OpenAPIV3_1.SchemaObject,
   parentName?: string,
-  namedEnumLookup?: Map<string, string>,
+  refMap?: RefMap,
 ): ParsedProperty[] {
   if (!schema.properties) return [];
 
@@ -26,20 +27,27 @@ export function extractProperties(
         (Array.isArray(prop.type) && (prop.type as string[]).includes('null')),
     };
 
-    if (mapped.type === 'enum' && prop.enum) {
-      parsedProp.enumValues = prop.enum as (string | number)[];
+    // Get enum values — handle array-of-enum case where values are on items
+    const enumValues = mapped.isArray
+      ? (((prop as unknown as Record<string, unknown>).items as OpenAPIV3_1.SchemaObject | undefined)?.enum as
+          | (string | number)[]
+          | undefined)
+      : (prop.enum as (string | number)[] | undefined);
 
-      // Try to find a named enum from the lookup (recovered from $ref names)
-      const enumKey = JSON.stringify(prop.enum);
-      if (namedEnumLookup?.has(enumKey)) {
-        parsedProp.enumName = namedEnumLookup.get(enumKey)!;
+    if (mapped.type === 'enum' && enumValues) {
+      parsedProp.enumValues = enumValues;
+
+      // Try $ref-based name first, fall back to derived name
+      const refName = refMap?.schemaProperties.get(parentName ?? '')?.get(name);
+      if (refName) {
+        parsedProp.enumName = refName;
       } else if (parentName) {
         parsedProp.enumName = deriveEnumName(parentName, name);
       }
     }
 
     if (mapped.type === 'object' && prop.properties) {
-      parsedProp.properties = extractProperties(prop, parentName, namedEnumLookup);
+      parsedProp.properties = extractProperties(prop, parentName, refMap);
     }
 
     return parsedProp;

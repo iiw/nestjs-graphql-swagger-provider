@@ -6,6 +6,7 @@ import { generate } from './generate.js';
 
 const FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore.json');
 const ENUM_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-enums.json');
+const REFS_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-refs.json');
 
 describe('generate', () => {
   let outputDir: string;
@@ -217,5 +218,68 @@ describe('generate with enums', () => {
     );
     expect(content).toContain("from '../enums'");
     expect(content).toContain('PetStatus');
+  });
+});
+
+describe('generate with $ref fixture', () => {
+  let outputDir: string;
+
+  beforeEach(() => {
+    outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nestjs-graphql-refs-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  it('should generate models using $ref name (Pet) not synthetic name', async () => {
+    await generate(REFS_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.models.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('class Pet');
+    expect(content).not.toContain('GetPetsPetIdResponse');
+  });
+
+  it('should generate DTOs using $ref name (CreatePetInput) not synthetic name', async () => {
+    await generate(REFS_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.dto.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('class CreatePetInput');
+    expect(content).not.toContain('PostPetsInput');
+  });
+
+  it('should reference $ref model name in resolver return type', async () => {
+    await generate(REFS_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.resolver.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('() => Pet');
+  });
+
+  it('should generate both PetStatus and OwnerStatus as separate enums', async () => {
+    await generate(REFS_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
+    expect(content).toContain('enum PetStatus');
+    expect(content).toContain('enum OwnerStatus');
+  });
+
+  it('should use Owner model name for owners controller', async () => {
+    await generate(REFS_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'owners', 'owners.models.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('class Owner');
+    expect(content).not.toContain('GetOwnersResponse');
   });
 });

@@ -1,5 +1,6 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ParsedSchema } from './types.js';
+import type { RefMap } from './ref-resolver.js';
 import { extractProperties } from './properties.js';
 
 export function schemaToName(path: string, method: string, suffix: string): string {
@@ -15,7 +16,7 @@ export function schemaToName(path: string, method: string, suffix: string): stri
 export function extractSchema(
   schema: OpenAPIV3_1.SchemaObject | undefined,
   name: string,
-  namedEnumLookup?: Map<string, string>,
+  refMap?: RefMap,
 ): ParsedSchema | undefined {
   if (!schema) return undefined;
 
@@ -24,20 +25,20 @@ export function extractSchema(
     if (items) {
       return {
         name,
-        properties: extractProperties(items, name, namedEnumLookup),
+        properties: extractProperties(items, name, refMap),
       };
     }
   }
 
   return {
     name,
-    properties: extractProperties(schema, name, namedEnumLookup),
+    properties: extractProperties(schema, name, refMap),
   };
 }
 
 export function extractGlobalSchemas(
   schemas: Record<string, OpenAPIV3_1.SchemaObject> | undefined,
-  namedEnumLookup?: Map<string, string>,
+  refMap?: RefMap,
 ): ParsedSchema[] {
   if (!schemas) return [];
 
@@ -45,6 +46,6 @@ export function extractGlobalSchemas(
     .filter(([, schema]) => schema.type === 'object' || schema.properties)
     .map(([name, schema]) => ({
       name,
-      properties: extractProperties(schema, name, namedEnumLookup),
+      properties: extractProperties(schema, name, refMap),
     }));
 }

@@ -15,21 +15,6 @@ export function deriveEnumName(parentName: string, propName: string): string {
   return `${toPascalCase(parentName)}${toPascalCase(propName)}`;
 }
 
-export function buildNamedEnumLookup(
-  schemas: Record<string, OpenAPIV3_1.SchemaObject> | undefined,
-): Map<string, string> {
-  const lookup = new Map<string, string>();
-  if (!schemas) return lookup;
-
-  for (const [name, schema] of Object.entries(schemas)) {
-    if (schema.enum && (schema.type === 'string' || schema.type === 'integer' || schema.type === 'number')) {
-      const key = JSON.stringify(schema.enum);
-      lookup.set(key, name);
-    }
-  }
-
-  return lookup;
-}
 
 export function extractGlobalEnums(
   schemas: Record<string, OpenAPIV3_1.SchemaObject> | undefined,

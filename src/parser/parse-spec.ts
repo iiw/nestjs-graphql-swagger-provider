@@ -1,22 +1,22 @@
 import SwaggerParser from '@apidevtools/swagger-parser';
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ParsedController, ParsedEndpoint, ParsedSpec } from './types.js';
-import { buildNamedEnumLookup, collectInlineEnums, extractGlobalEnums } from './enums.js';
+import { collectInlineEnums, extractGlobalEnums } from './enums.js';
 import { extractParameters } from './parameters.js';
 import { extractRequestBody } from './request-body.js';
+import { buildRefMap } from './ref-resolver.js';
 import { extractErrorResponses, extractResponseSchema } from './responses.js';
 import { extractGlobalSchemas, schemaToName } from './schemas.js';
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'] as const;
 
 export async function parseSpec(input: string): Promise<ParsedSpec> {
+  const refMap = await buildRefMap(input);
+
   const api = (await SwaggerParser.dereference(input)) as OpenAPIV3_1.Document;
 
   const componentSchemas =
     (api.components?.schemas as Record<string, OpenAPIV3_1.SchemaObject>) ?? undefined;
-
-  // Build a lookup from serialized enum values → named schema name
-  const namedEnumLookup = buildNamedEnumLookup(componentSchemas);
 
   const controllerMap = new Map<string, ParsedEndpoint[]>();
 
@@ -32,21 +32,28 @@ export async function parseSpec(input: string): Promise<ParsedSpec> {
         const operationId =
           operation.operationId ?? `${method}${path.replace(/[/{}]/g, '_')}`;
 
+        const responseName =
+          refMap.operationSchemas.get(`${operationId}:response`) ??
+          schemaToName(path, method, 'Response');
+        const requestBodyName =
+          refMap.operationSchemas.get(`${operationId}:requestBody`) ??
+          schemaToName(path, method, 'Input');
+
         const endpoint: ParsedEndpoint = {
           path,
           method,
           operationId,
           summary: operation.summary,
-          parameters: extractParameters(operation.parameters, operationId, namedEnumLookup),
+          parameters: extractParameters(operation.parameters, operationId, refMap),
           requestBody: extractRequestBody(
             operation.requestBody as OpenAPIV3_1.RequestBodyObject | undefined,
-            schemaToName(path, method, 'Input'),
-            namedEnumLookup,
+            requestBodyName,
+            refMap,
           ),
           responseSchema: extractResponseSchema(
             operation.responses,
-            schemaToName(path, method, 'Response'),
-            namedEnumLookup,
+            responseName,
+            refMap,
           ),
           errorResponses: extractErrorResponses(operation.responses),
         };
@@ -66,7 +73,7 @@ export async function parseSpec(input: string): Promise<ParsedSpec> {
     }),
   );
 
-  const schemas = extractGlobalSchemas(componentSchemas, namedEnumLookup);
+  const schemas = extractGlobalSchemas(componentSchemas, refMap);
 
   // Collect enums: global (named in components/schemas) + inline
   const globalEnums = extractGlobalEnums(componentSchemas);

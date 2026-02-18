@@ -1,11 +1,12 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ParsedErrorResponse, ParsedSchema } from './types.js';
+import type { RefMap } from './ref-resolver.js';
 import { extractSchema } from './schemas.js';
 
 export function extractResponseSchema(
   responses: OpenAPIV3_1.ResponsesObject | undefined,
   name: string,
-  namedEnumLookup?: Map<string, string>,
+  refMap?: RefMap,
 ): ParsedSchema | undefined {
   if (!responses) return undefined;
 
@@ -18,7 +19,7 @@ export function extractResponseSchema(
   if (!jsonContent?.schema) return undefined;
 
   const schema = jsonContent.schema as OpenAPIV3_1.SchemaObject;
-  return extractSchema(schema, name, namedEnumLookup);
+  return extractSchema(schema, name, refMap);
 }
 
 export function extractErrorResponses(

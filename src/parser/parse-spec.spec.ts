@@ -4,6 +4,7 @@ import { parseSpec } from './parse-spec.js';
 
 const FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore.json');
 const ENUM_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-enums.json');
+const REFS_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-refs.json');
 
 describe('parseSpec', () => {
   it('should parse the petstore fixture into controllers', async () => {
@@ -181,5 +182,102 @@ describe('parseSpec enums', () => {
 
     const petStatusEnums = spec.enums.filter((e) => e.name === 'PetStatus');
     expect(petStatusEnums).toHaveLength(1);
+  });
+});
+
+describe('parseSpec $ref resolution', () => {
+  it('should use $ref name for response schema instead of synthetic name', async () => {
+    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const pets = spec.controllers.find((c) => c.name === 'Pets')!;
+    const getPet = pets.endpoints.find((e) => e.operationId === 'getPet')!;
+
+    expect(getPet.responseSchema).toBeDefined();
+    expect(getPet.responseSchema!.name).toBe('Pet');
+  });
+
+  it('should use $ref name for array response schema', async () => {
+    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const pets = spec.controllers.find((c) => c.name === 'Pets')!;
+    const listPets = pets.endpoints.find((e) => e.operationId === 'listPets')!;
+
+    expect(listPets.responseSchema).toBeDefined();
+    expect(listPets.responseSchema!.name).toBe('Pet');
+  });
+
+  it('should use $ref name for request body instead of synthetic name', async () => {
+    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const pets = spec.controllers.find((c) => c.name === 'Pets')!;
+    const createPet = pets.endpoints.find((e) => e.operationId === 'createPet')!;
+
+    expect(createPet.requestBody).toBeDefined();
+    expect(createPet.requestBody!.name).toBe('CreatePetInput');
+  });
+
+  it('should resolve enum name via $ref for schema properties', async () => {
+    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const pets = spec.controllers.find((c) => c.name === 'Pets')!;
+    const getPet = pets.endpoints.find((e) => e.operationId === 'getPet')!;
+    const statusProp = getPet.responseSchema!.properties.find((p) => p.name === 'status')!;
+
+    expect(statusProp.type).toBe('enum');
+    expect(statusProp.enumName).toBe('PetStatus');
+  });
+
+  it('should distinguish colliding enum values via $ref names', async () => {
+    const spec = await parseSpec(REFS_FIXTURE_PATH);
+
+    // Both PetStatus and OwnerStatus have ["active", "inactive"]
+    const petStatus = spec.enums.find((e) => e.name === 'PetStatus');
+    const ownerStatus = spec.enums.find((e) => e.name === 'OwnerStatus');
+
+    expect(petStatus).toBeDefined();
+    expect(ownerStatus).toBeDefined();
+    expect(petStatus!.values).toEqual(['active', 'inactive']);
+    expect(ownerStatus!.values).toEqual(['active', 'inactive']);
+  });
+
+  it('should resolve Pet.status as PetStatus and Owner.status as OwnerStatus', async () => {
+    const spec = await parseSpec(REFS_FIXTURE_PATH);
+
+    const petSchema = spec.schemas.find((s) => s.name === 'Pet')!;
+    const petStatusProp = petSchema.properties.find((p) => p.name === 'status')!;
+    expect(petStatusProp.enumName).toBe('PetStatus');
+
+    const ownerSchema = spec.schemas.find((s) => s.name === 'Owner')!;
+    const ownerStatusProp = ownerSchema.properties.find((p) => p.name === 'status')!;
+    expect(ownerStatusProp.enumName).toBe('OwnerStatus');
+  });
+
+  it('should resolve enum name via $ref for query parameters', async () => {
+    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const pets = spec.controllers.find((c) => c.name === 'Pets')!;
+    const listPets = pets.endpoints.find((e) => e.operationId === 'listPets')!;
+    const statusParam = listPets.parameters.find((p) => p.name === 'status')!;
+
+    expect(statusParam.type).toBe('enum');
+    expect(statusParam.enumName).toBe('PetStatus');
+    expect(statusParam.enumValues).toEqual(['active', 'inactive']);
+  });
+
+  it('should resolve array-of-enum parameters via $ref', async () => {
+    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const pets = spec.controllers.find((c) => c.name === 'Pets')!;
+    const listPets = pets.endpoints.find((e) => e.operationId === 'listPets')!;
+    const statusesParam = listPets.parameters.find((p) => p.name === 'statuses')!;
+
+    expect(statusesParam.type).toBe('enum');
+    expect(statusesParam.isArray).toBe(true);
+    expect(statusesParam.enumName).toBe('PetStatus');
+    expect(statusesParam.enumValues).toEqual(['active', 'inactive']);
+  });
+
+  it('should not produce duplicate enums', async () => {
+    const spec = await parseSpec(REFS_FIXTURE_PATH);
+
+    const petStatusEnums = spec.enums.filter((e) => e.name === 'PetStatus');
+    expect(petStatusEnums).toHaveLength(1);
+
+    const ownerStatusEnums = spec.enums.filter((e) => e.name === 'OwnerStatus');
+    expect(ownerStatusEnums).toHaveLength(1);
   });
 });
