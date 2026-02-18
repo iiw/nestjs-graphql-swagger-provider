@@ -1,5 +1,7 @@
 import { toPascalCase } from './utils.js';
 
+export { deriveEnumName } from '../parser/enums.js';
+
 /**
  * Derive a PascalCase enum member name from a value.
  * - Strings → PascalCase (e.g. "in_progress" → "InProgress")
@@ -17,12 +19,4 @@ export function enumMemberName(value: string | number): string {
     return `_${pascal}`;
   }
   return pascal;
-}
-
-/**
- * Derive an enum name from a parent schema name and property name.
- * e.g. ("Pet", "status") → "PetStatus"
- */
-export function deriveEnumName(parentName: string, propName: string): string {
-  return `${toPascalCase(parentName)}${toPascalCase(propName)}`;
 }
