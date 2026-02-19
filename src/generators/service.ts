@@ -2,6 +2,33 @@ import type { SourceFile } from 'ts-morph';
 import type { ParsedController, ParsedEndpoint } from '../parser/types.js';
 import { toCamelCase, toPascalCase, tsTypeForProperty } from './utils.js';
 
+function buildApiMethodCall(
+  controller: ParsedController,
+  endpoint: ParsedEndpoint,
+): string {
+  const namespace = toCamelCase(controller.name);
+  const methodName = toCamelCase(endpoint.operationId);
+  const args: string[] = [];
+
+  // 1. Path params (positional)
+  for (const param of endpoint.parameters.filter((p) => p.location === 'path')) {
+    args.push(param.name);
+  }
+  // 2. Body (if request body exists)
+  if (endpoint.requestBody) {
+    args.push('input');
+  }
+  // 3. Query params object
+  const queryParams = endpoint.parameters.filter((p) => p.location === 'query');
+  if (queryParams.length > 0) {
+    args.push(`{ ${queryParams.map((p) => p.name).join(', ')} }`);
+  }
+  // 4. extraConfig (always last, maps to RequestParams)
+  args.push('extraConfig');
+
+  return `this.apiClient.${namespace}.${methodName}(${args.join(', ')})`;
+}
+
 function buildMethodParams(endpoint: ParsedEndpoint): string {
   const params: string[] = [];
 
@@ -25,39 +52,6 @@ function buildFactoryCallArgs(endpoint: ParsedEndpoint): string {
   }
   if (argNames.length === 0) return '{}';
   return `{ ${argNames.join(', ')} }`;
-}
-
-function buildClientCallArgs(endpoint: ParsedEndpoint): string {
-  const pathWithInterpolation = endpoint.path.replace(/{(\w+)}/g, '${$1}');
-  const hasPathParams = endpoint.path.includes('{');
-
-  const urlArg = hasPathParams ? `\`${pathWithInterpolation}\`` : `'${endpoint.path}'`;
-
-  const queryParams = endpoint.parameters.filter((p) => p.location === 'query');
-  const hasQuery = queryParams.length > 0;
-  const queryObj = hasQuery ? queryParams.map((p) => p.name).join(', ') : '';
-
-  const configParts: string[] = [];
-  if (hasQuery) {
-    configParts.push(`params: { ${queryObj} }`);
-  }
-  configParts.push('...extraConfig');
-
-  const configArg = `{ ${configParts.join(', ')} }`;
-
-  const args: string[] = [urlArg];
-
-  if (endpoint.requestBody && endpoint.method !== 'get') {
-    args.push('input');
-    args.push(configArg);
-  } else if (endpoint.method === 'get' || endpoint.method === 'delete') {
-    args.push(configArg);
-  } else {
-    args.push('undefined');
-    args.push(configArg);
-  }
-
-  return args.join(', ');
 }
 
 function buildErrorHandling(endpoint: ParsedEndpoint): string | null {
@@ -91,8 +85,8 @@ export function generateService(
   });
 
   sourceFile.addImportDeclaration({
-    moduleSpecifier: 'axios',
-    namedImports: ['AxiosInstance'],
+    moduleSpecifier: '../api-client',
+    namedImports: ['Api'],
   });
 
   // Import DTOs if any endpoint has a request body
@@ -114,17 +108,16 @@ export function generateService(
     const methodName = toCamelCase(endpoint.operationId);
     const params = buildMethodParams(endpoint);
     const factoryArgs = buildFactoryCallArgs(endpoint);
-    const clientArgs = buildClientCallArgs(endpoint);
-    const httpMethod = endpoint.method;
+    const apiCall = buildApiMethodCall(controller, endpoint);
     const errorHandling = buildErrorHandling(endpoint);
 
     const extraConfigLine = `    const extraConfig = this.requestConfigFactory?.('${methodName}', ${factoryArgs}) ?? {};`;
 
     let body: string;
     if (errorHandling) {
-      body = `${extraConfigLine}\n    try {\n      const response = await this.httpClient.${httpMethod}(${clientArgs});\n      return response.data;\n    } catch (error: any) {\n${errorHandling}\n        throw error;\n    }`;
+      body = `${extraConfigLine}\n    try {\n      const response = await ${apiCall};\n      return response.data;\n    } catch (error: any) {\n${errorHandling}\n        throw error;\n    }`;
     } else {
-      body = `${extraConfigLine}\n    const response = await this.httpClient.${httpMethod}(${clientArgs});\n    return response.data;`;
+      body = `${extraConfigLine}\n    const response = await ${apiCall};\n    return response.data;`;
     }
 
     return {
@@ -149,11 +142,11 @@ export function generateService(
       {
         parameters: [
           {
-            name: 'httpClient',
-            type: 'AxiosInstance',
+            name: 'apiClient',
+            type: 'Api',
             isReadonly: true,
             scope: 'private' as unknown as undefined,
-            decorators: [{ name: 'Inject', arguments: ["'HTTP_CLIENT'"] }],
+            decorators: [{ name: 'Inject', arguments: ["'API_CLIENT'"] }],
           },
           {
             name: 'requestConfigFactory',

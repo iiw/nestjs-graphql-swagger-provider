@@ -395,7 +395,7 @@ describe('generate module DI', () => {
     fs.rmSync(outputDir, { recursive: true, force: true });
   });
 
-  it('should generate module with static register method providing HTTP_CLIENT', async () => {
+  it('should generate module with static register method providing API_CLIENT', async () => {
     await generate(FIXTURE_PATH, outputDir);
 
     const content = fs.readFileSync(
@@ -403,20 +403,42 @@ describe('generate module DI', () => {
       'utf-8',
     );
     expect(content).toContain('static register');
-    expect(content).toContain("provide: 'HTTP_CLIENT'");
-    expect(content).toContain('useValue: httpClient');
+    expect(content).toContain("provide: 'API_CLIENT'");
+    expect(content).toContain('useValue: apiClient');
     expect(content).toContain('DynamicModule');
   });
 
-  it('should generate service with @Inject HTTP_CLIENT decorator', async () => {
+  it('should import Api from api-client in module', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.module.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('Api');
+    expect(content).toContain("from '../api-client'");
+  });
+
+  it('should generate service with @Inject API_CLIENT decorator', async () => {
     await generate(FIXTURE_PATH, outputDir);
 
     const content = fs.readFileSync(
       path.join(outputDir, 'pets', 'pets.service.ts'),
       'utf-8',
     );
-    expect(content).toContain("@Inject('HTTP_CLIENT')");
-    expect(content).toContain('AxiosInstance');
+    expect(content).toContain("@Inject('API_CLIENT')");
+    expect(content).toContain('Api');
+  });
+
+  it('should import Api from api-client in service', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('Api');
+    expect(content).toContain("from '../api-client'");
   });
 
   it('should import Inject from @nestjs/common in service', async () => {
@@ -428,6 +450,58 @@ describe('generate module DI', () => {
     );
     expect(content).toContain('Inject');
     expect(content).toContain("from '@nestjs/common'");
+  });
+});
+
+describe('generate service Api client calls', () => {
+  let outputDir: string;
+
+  beforeEach(() => {
+    outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nestjs-graphql-apicall-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  it('should call this.apiClient.pets.listPets with query params object', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('this.apiClient.pets.listPets({ limit }, extraConfig)');
+  });
+
+  it('should call this.apiClient.pets.getPet with path param', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('this.apiClient.pets.getPet(petId, extraConfig)');
+  });
+
+  it('should call this.apiClient.pets.createPet with request body', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('this.apiClient.pets.createPet(input, extraConfig)');
+  });
+
+  it('should call this.apiClient.owners.listOwners for owners service', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'owners', 'owners.service.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('this.apiClient.owners.listOwners(extraConfig)');
   });
 });
 
@@ -676,14 +750,14 @@ describe('generate request config factory', () => {
     expect(content).toContain('?? {}');
   });
 
-  it('should spread extraConfig into axios calls', async () => {
+  it('should pass extraConfig as last argument to Api client calls', async () => {
     await generate(FIXTURE_PATH, outputDir);
 
     const content = fs.readFileSync(
       path.join(outputDir, 'pets', 'pets.service.ts'),
       'utf-8',
     );
-    expect(content).toContain('...extraConfig');
+    expect(content).toContain('extraConfig)');
   });
 
   it('should pass method arguments to factory call', async () => {
@@ -762,15 +836,14 @@ describe('generate with OpenAPI 3.0 spec', () => {
     expect(content).toContain('class CreatePetInput');
   });
 
-  it('should generate service with correct HTTP methods from 3.0 spec', async () => {
+  it('should generate service using Api client methods from 3.0 spec', async () => {
     await generate(V30_FIXTURE_PATH, outputDir);
 
     const content = fs.readFileSync(
       path.join(outputDir, 'pets', 'pets.service.ts'),
       'utf-8',
     );
-    expect(content).toContain('this.httpClient.get');
-    expect(content).toContain('this.httpClient.post');
+    expect(content).toContain('this.apiClient.pets.');
   });
 
   it('should generate resolver with @Query and @Mutation from 3.0 spec', async () => {

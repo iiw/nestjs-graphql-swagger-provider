@@ -16,8 +16,8 @@ export function generateModule(
   });
 
   sourceFile.addImportDeclaration({
-    moduleSpecifier: 'axios',
-    namedImports: ['AxiosInstance'],
+    moduleSpecifier: '../api-client',
+    namedImports: ['Api'],
   });
 
   sourceFile.addImportDeclaration({
@@ -45,8 +45,8 @@ export function generateModule(
 
   const registerBody = `    const providers: any[] = [
       {
-        provide: 'HTTP_CLIENT',
-        useValue: httpClient,
+        provide: 'API_CLIENT',
+        useValue: apiClient,
       },
       ${resolverName},
       ${serviceName},
@@ -71,7 +71,7 @@ export function generateModule(
         name: 'register',
         isStatic: true,
         parameters: [
-          { name: 'httpClient', type: 'AxiosInstance' },
+          { name: 'apiClient', type: 'Api' },
           {
             name: 'requestConfigFactory',
             type: 'RequestConfigFactory',
