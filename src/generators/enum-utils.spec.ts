@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { deriveEnumName, enumMemberName } from './enum-utils.js';
+import { enumMemberName } from './enum-utils.js';
+import { deriveEnumName } from '../parser/enums.js';
 
 describe('enumMemberName', () => {
   it('should PascalCase string values', () => {

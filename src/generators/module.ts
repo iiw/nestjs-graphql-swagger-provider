@@ -1,6 +1,6 @@
 import type { SourceFile } from 'ts-morph';
 import type { ParsedController } from '../parser/types.js';
-import { toPascalCase } from './utils.js';
+import { toPascalCase } from '../utils.js';
 
 export function generateModule(
   sourceFile: SourceFile,

@@ -2,11 +2,11 @@ import type { SourceFile } from 'ts-morph';
 import type { ParsedController, ParsedEndpoint } from '../parser/types.js';
 import {
   collectDtoNames,
-  graphqlScalarForPrimitive,
-  toCamelCase,
-  toPascalCase,
-  tsTypeForProperty,
-} from './utils.js';
+  collectModelNames,
+  collectParameterEnumNames,
+} from './collectors.js';
+import { graphqlScalarForPrimitive, tsTypeForProperty } from './type-mappers.js';
+import { toCamelCase, toPascalCase } from '../utils.js';
 
 function isQuery(method: string): boolean {
   return method === 'get';
@@ -108,14 +108,7 @@ export function generateResolver(
   }
 
   // Import enum types used in parameters
-  const enumNames = new Set<string>();
-  for (const endpoint of controller.endpoints) {
-    for (const param of endpoint.parameters) {
-      if (param.type === 'enum' && param.enumName) {
-        enumNames.add(param.enumName);
-      }
-    }
-  }
+  const enumNames = collectParameterEnumNames(controller);
   if (enumNames.size > 0) {
     sourceFile.addImportDeclaration({
       moduleSpecifier: '../enums',
@@ -152,13 +145,7 @@ export function generateResolver(
   });
 
   // Import models if any endpoint has a non-primitive response schema
-  const modelNames = [
-    ...new Set(
-      controller.endpoints
-        .filter((e) => e.responseSchema && !e.responseSchema.primitiveType)
-        .map((e) => e.responseSchema!.name),
-    ),
-  ];
+  const modelNames = collectModelNames(controller);
   if (modelNames.length > 0) {
     sourceFile.addImportDeclaration({
       moduleSpecifier: `./${controller.name.toLowerCase()}.models`,

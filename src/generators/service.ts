@@ -1,6 +1,8 @@
 import type { SourceFile } from 'ts-morph';
 import type { ParsedController, ParsedEndpoint } from '../parser/types.js';
-import { collectDtoNames, toCamelCase, toPascalCase, tsTypeForProperty } from './utils.js';
+import { collectDtoNames } from './collectors.js';
+import { tsTypeForProperty } from './type-mappers.js';
+import { toCamelCase, toPascalCase } from '../utils.js';
 
 function buildApiMethodCall(
   controller: ParsedController,

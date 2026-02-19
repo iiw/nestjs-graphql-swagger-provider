@@ -1,7 +1,12 @@
 import { type SourceFile, StructureKind } from 'ts-morph';
-import type { ParsedProperty, ParsedSchema } from '../parser/types.js';
+import type {
+  ParsedController,
+  ParsedEndpoint,
+  ParsedProperty,
+  ParsedSchema,
+} from '../parser/types.js';
 import { collectEnumNamesFromProperties } from './enum-utils.js';
-import { graphqlTypeForProperty, tsTypeForProperty } from './utils.js';
+import { graphqlTypeForProperty, tsTypeForProperty } from './type-mappers.js';
 
 function needsExplicitType(prop: ParsedProperty, gqlType: string): boolean {
   return prop.isArray || gqlType === 'Float' || prop.type === 'enum';
@@ -115,4 +120,21 @@ export function generateSchemaClasses(
       properties: ownProperties.map(buildPropertyDeclaration),
     });
   }
+}
+
+export function generateSchemaClassesFromEndpoints(
+  sourceFile: SourceFile,
+  controller: ParsedController,
+  globalSchemas: ParsedSchema[],
+  decoratorName: 'ObjectType' | 'InputType',
+  schemaSelector: (endpoint: ParsedEndpoint) => ParsedSchema | undefined,
+): void {
+  const schemas = new Map<string, ParsedSchema>();
+  for (const endpoint of controller.endpoints) {
+    const schema = schemaSelector(endpoint);
+    if (schema) {
+      schemas.set(schema.name, schema);
+    }
+  }
+  generateSchemaClasses(sourceFile, schemas, globalSchemas, decoratorName);
 }

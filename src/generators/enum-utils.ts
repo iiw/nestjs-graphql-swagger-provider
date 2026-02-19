@@ -1,8 +1,6 @@
 import type { ParsedProperty } from '../parser/types.js';
 import { toPascalCase } from '../utils.js';
 
-export { deriveEnumName } from '../parser/enums.js';
-
 export function collectEnumNamesFromProperties(properties: ParsedProperty[]): Set<string> {
   const names = new Set<string>();
   for (const prop of properties) {
