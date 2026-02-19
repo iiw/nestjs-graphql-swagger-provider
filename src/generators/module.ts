@@ -30,16 +30,36 @@ export function generateModule(
     namedImports: [serviceName],
   });
 
-  const registerBody = `    return {
+  sourceFile.addTypeAlias({
+    name: 'RequestConfigFactory',
+    isExported: true,
+    type: '(methodName: string, args: Record<string, unknown>) => Record<string, unknown> | undefined',
+    leadingTrivia: [
+      '/**\n',
+      ' * Factory function for customizing HTTP requests made by the generated service.\n',
+      ' * Receives the service method name and all arguments, returns extra axios config\n',
+      ' * (e.g., headers, auth) to merge into each request.\n',
+      ' */\n',
+    ].join(''),
+  });
+
+  const registerBody = `    const providers: any[] = [
+      {
+        provide: 'HTTP_CLIENT',
+        useValue: httpClient,
+      },
+      ${resolverName},
+      ${serviceName},
+    ];
+    if (requestConfigFactory) {
+      providers.push({
+        provide: 'REQUEST_CONFIG_FACTORY',
+        useValue: requestConfigFactory,
+      });
+    }
+    return {
       module: ${moduleName},
-      providers: [
-        {
-          provide: 'HTTP_CLIENT',
-          useValue: httpClient,
-        },
-        ${resolverName},
-        ${serviceName},
-      ],
+      providers,
     };`;
 
   sourceFile.addClass({
@@ -50,7 +70,14 @@ export function generateModule(
       {
         name: 'register',
         isStatic: true,
-        parameters: [{ name: 'httpClient', type: 'AxiosInstance' }],
+        parameters: [
+          { name: 'httpClient', type: 'AxiosInstance' },
+          {
+            name: 'requestConfigFactory',
+            type: 'RequestConfigFactory',
+            hasQuestionToken: true,
+          },
+        ],
         returnType: 'DynamicModule',
         statements: registerBody,
       },

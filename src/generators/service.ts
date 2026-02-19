@@ -18,6 +18,15 @@ function buildMethodParams(endpoint: ParsedEndpoint): string {
   return params.join(', ');
 }
 
+function buildFactoryCallArgs(endpoint: ParsedEndpoint): string {
+  const argNames = endpoint.parameters.map((p) => p.name);
+  if (endpoint.requestBody) {
+    argNames.push('input');
+  }
+  if (argNames.length === 0) return '{}';
+  return `{ ${argNames.join(', ')} }`;
+}
+
 function buildClientCallArgs(endpoint: ParsedEndpoint): string {
   const pathWithInterpolation = endpoint.path.replace(/{(\w+)}/g, '${$1}');
   const hasPathParams = endpoint.path.includes('{');
@@ -25,23 +34,27 @@ function buildClientCallArgs(endpoint: ParsedEndpoint): string {
   const urlArg = hasPathParams ? `\`${pathWithInterpolation}\`` : `'${endpoint.path}'`;
 
   const queryParams = endpoint.parameters.filter((p) => p.location === 'query');
+  const hasQuery = queryParams.length > 0;
+  const queryObj = hasQuery ? queryParams.map((p) => p.name).join(', ') : '';
+
+  const configParts: string[] = [];
+  if (hasQuery) {
+    configParts.push(`params: { ${queryObj} }`);
+  }
+  configParts.push('...extraConfig');
+
+  const configArg = `{ ${configParts.join(', ')} }`;
 
   const args: string[] = [urlArg];
 
   if (endpoint.requestBody && endpoint.method !== 'get') {
     args.push('input');
-    if (queryParams.length > 0) {
-      const queryObj = queryParams.map((p) => p.name).join(', ');
-      args.push(`{ params: { ${queryObj} } }`);
-    }
-  } else if (queryParams.length > 0) {
-    const queryObj = queryParams.map((p) => p.name).join(', ');
-    if (endpoint.method === 'get' || endpoint.method === 'delete') {
-      args.push(`{ params: { ${queryObj} } }`);
-    } else {
-      args.push('undefined');
-      args.push(`{ params: { ${queryObj} } }`);
-    }
+    args.push(configArg);
+  } else if (endpoint.method === 'get' || endpoint.method === 'delete') {
+    args.push(configArg);
+  } else {
+    args.push('undefined');
+    args.push(configArg);
   }
 
   return args.join(', ');
@@ -67,7 +80,7 @@ export function generateService(
 
   const hasErrorHandling = controller.endpoints.some((e) => e.errorResponses.length > 0);
 
-  const nestImports = ['Inject', 'Injectable'];
+  const nestImports = ['Inject', 'Injectable', 'Optional'];
   if (hasErrorHandling) {
     nestImports.push('HttpException');
   }
@@ -100,15 +113,18 @@ export function generateService(
   const methods = controller.endpoints.map((endpoint) => {
     const methodName = toCamelCase(endpoint.operationId);
     const params = buildMethodParams(endpoint);
+    const factoryArgs = buildFactoryCallArgs(endpoint);
     const clientArgs = buildClientCallArgs(endpoint);
     const httpMethod = endpoint.method;
     const errorHandling = buildErrorHandling(endpoint);
 
+    const extraConfigLine = `    const extraConfig = this.requestConfigFactory?.('${methodName}', ${factoryArgs}) ?? {};`;
+
     let body: string;
     if (errorHandling) {
-      body = `    try {\n      const response = await this.httpClient.${httpMethod}(${clientArgs});\n      return response.data;\n    } catch (error: any) {\n${errorHandling}\n        throw error;\n    }`;
+      body = `${extraConfigLine}\n    try {\n      const response = await this.httpClient.${httpMethod}(${clientArgs});\n      return response.data;\n    } catch (error: any) {\n${errorHandling}\n        throw error;\n    }`;
     } else {
-      body = `    const response = await this.httpClient.${httpMethod}(${clientArgs});\n    return response.data;`;
+      body = `${extraConfigLine}\n    const response = await this.httpClient.${httpMethod}(${clientArgs});\n    return response.data;`;
     }
 
     return {
@@ -138,6 +154,17 @@ export function generateService(
             isReadonly: true,
             scope: 'private' as unknown as undefined,
             decorators: [{ name: 'Inject', arguments: ["'HTTP_CLIENT'"] }],
+          },
+          {
+            name: 'requestConfigFactory',
+            type: '((methodName: string, args: Record<string, unknown>) => Record<string, unknown> | undefined)',
+            isReadonly: true,
+            scope: 'private' as unknown as undefined,
+            hasQuestionToken: true,
+            decorators: [
+              { name: 'Optional', arguments: [] },
+              { name: 'Inject', arguments: ["'REQUEST_CONFIG_FACTORY'"] },
+            ],
           },
         ],
       },
