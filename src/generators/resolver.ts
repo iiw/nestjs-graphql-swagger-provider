@@ -34,15 +34,29 @@ function buildResolverMethodParams(endpoint: ParsedEndpoint): {
     }
     if (param.isArray) tsType = `${tsType}[]`;
 
-    const argsOptions: string[] = [`'${param.name}'`];
+    const argsOpts: string[] = [];
     if (param.type === 'enum' && param.enumName) {
-      argsOptions.push(`{ type: () => ${param.enumName} }`);
+      argsOpts.push(`type: () => ${param.enumName}`);
+    }
+    if (!param.required) {
+      argsOpts.push('nullable: true');
+    }
+
+    const argsArgs: string[] = [`'${param.name}'`];
+    if (argsOpts.length > 0) {
+      argsArgs.push(`{ ${argsOpts.join(', ')} }`);
     }
 
     params.push({
       name: param.name,
-      type: tsType,
-      decorators: [{ name: 'Args', arguments: argsOptions }],
+      type: param.required ? tsType : `${tsType} | null`,
+      hasQuestionToken: !param.required,
+      decorators: [{ name: 'Args', arguments: argsArgs }],
+    } as {
+      name: string;
+      type: string;
+      hasQuestionToken?: boolean;
+      decorators: { name: string; arguments: string[] }[];
     });
   }
 

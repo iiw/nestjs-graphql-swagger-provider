@@ -380,3 +380,121 @@ describe('generate with allOf fixture', () => {
     expect(content).toContain('class CreateDogInput extends CreateAnimalInput');
   });
 });
+
+describe('generate module DI', () => {
+  let outputDir: string;
+
+  beforeEach(() => {
+    outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nestjs-graphql-di-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  it('should generate module with static register method providing HTTP_CLIENT', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.module.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('static register');
+    expect(content).toContain("provide: 'HTTP_CLIENT'");
+    expect(content).toContain('useValue: httpClient');
+    expect(content).toContain('DynamicModule');
+  });
+
+  it('should generate service with @Inject HTTP_CLIENT decorator', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+    expect(content).toContain("@Inject('HTTP_CLIENT')");
+    expect(content).toContain('AxiosInstance');
+  });
+
+  it('should import Inject from @nestjs/common in service', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('Inject');
+    expect(content).toContain("from '@nestjs/common'");
+  });
+});
+
+describe('generate optional params', () => {
+  let outputDir: string;
+
+  beforeEach(() => {
+    outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nestjs-graphql-params-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  it('should mark optional query params as nullable in resolver @Args', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.resolver.ts'),
+      'utf-8',
+    );
+    // The 'limit' param in listPets is required: false
+    expect(content).toContain('nullable: true');
+  });
+
+  it('should not mark required path params as nullable', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.resolver.ts'),
+      'utf-8',
+    );
+    // petId is a required path param — its @Args should not have nullable
+    // Extract the getPet method to check petId specifically
+    const getPetMatch = content.match(/getPet[\s\S]*?petId[\s\S]*?\)/);
+    expect(getPetMatch).not.toBeNull();
+    expect(getPetMatch![0]).not.toContain('nullable');
+  });
+});
+
+describe('generate service request body types', () => {
+  let outputDir: string;
+
+  beforeEach(() => {
+    outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nestjs-graphql-svctype-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  it('should use DTO type name in service method params instead of Record', async () => {
+    await generate(REFS_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('input: CreatePetInput');
+    expect(content).not.toContain('Record<string, unknown>');
+  });
+
+  it('should import DTO types in service', async () => {
+    await generate(REFS_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('CreatePetInput');
+    expect(content).toContain("from './pets.dto'");
+  });
+});

@@ -12,7 +12,7 @@ function buildMethodParams(endpoint: ParsedEndpoint): string {
   }
 
   if (endpoint.requestBody) {
-    params.push(`input: Record<string, unknown>`);
+    params.push(`input: ${endpoint.requestBody.name}`);
   }
 
   return params.join(', ');
@@ -67,7 +67,7 @@ export function generateService(
 
   const hasErrorHandling = controller.endpoints.some((e) => e.errorResponses.length > 0);
 
-  const nestImports = ['Injectable'];
+  const nestImports = ['Inject', 'Injectable'];
   if (hasErrorHandling) {
     nestImports.push('HttpException');
   }
@@ -81,6 +81,21 @@ export function generateService(
     moduleSpecifier: 'axios',
     namedImports: ['AxiosInstance'],
   });
+
+  // Import DTOs if any endpoint has a request body
+  const dtoNames = [
+    ...new Set(
+      controller.endpoints
+        .filter((e) => e.requestBody)
+        .map((e) => e.requestBody!.name),
+    ),
+  ];
+  if (dtoNames.length > 0) {
+    sourceFile.addImportDeclaration({
+      moduleSpecifier: `./${controller.name.toLowerCase()}.dto`,
+      namedImports: dtoNames,
+    });
+  }
 
   const methods = controller.endpoints.map((endpoint) => {
     const methodName = toCamelCase(endpoint.operationId);
@@ -122,6 +137,7 @@ export function generateService(
             type: 'AxiosInstance',
             isReadonly: true,
             scope: 'private' as unknown as undefined,
+            decorators: [{ name: 'Inject', arguments: ["'HTTP_CLIENT'"] }],
           },
         ],
       },

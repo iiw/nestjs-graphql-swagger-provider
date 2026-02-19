@@ -12,7 +12,12 @@ export function generateModule(
 
   sourceFile.addImportDeclaration({
     moduleSpecifier: '@nestjs/common',
-    namedImports: ['Module'],
+    namedImports: ['DynamicModule', 'Module'],
+  });
+
+  sourceFile.addImportDeclaration({
+    moduleSpecifier: 'axios',
+    namedImports: ['AxiosInstance'],
   });
 
   sourceFile.addImportDeclaration({
@@ -25,13 +30,29 @@ export function generateModule(
     namedImports: [serviceName],
   });
 
+  const registerBody = `    return {
+      module: ${moduleName},
+      providers: [
+        {
+          provide: 'HTTP_CLIENT',
+          useValue: httpClient,
+        },
+        ${resolverName},
+        ${serviceName},
+      ],
+    };`;
+
   sourceFile.addClass({
     name: moduleName,
     isExported: true,
-    decorators: [
+    decorators: [{ name: 'Module', arguments: ['{}'] }],
+    methods: [
       {
-        name: 'Module',
-        arguments: [`{\n  providers: [${resolverName}, ${serviceName}],\n}`],
+        name: 'register',
+        isStatic: true,
+        parameters: [{ name: 'httpClient', type: 'AxiosInstance' }],
+        returnType: 'DynamicModule',
+        statements: registerBody,
       },
     ],
   });
