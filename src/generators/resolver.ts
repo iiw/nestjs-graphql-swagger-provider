@@ -1,6 +1,12 @@
 import type { SourceFile } from 'ts-morph';
 import type { ParsedController, ParsedEndpoint } from '../parser/types.js';
-import { graphqlScalarForPrimitive, toCamelCase, toPascalCase } from './utils.js';
+import {
+  collectDtoNames,
+  graphqlScalarForPrimitive,
+  toCamelCase,
+  toPascalCase,
+  tsTypeForProperty,
+} from './utils.js';
 
 function isQuery(method: string): boolean {
   return method === 'get';
@@ -18,20 +24,7 @@ function buildResolverMethodParams(endpoint: ParsedEndpoint): {
   }[] = [];
 
   for (const param of endpoint.parameters) {
-    let tsType: string;
-    switch (param.type) {
-      case 'enum':
-        tsType = param.enumName ?? 'string';
-        break;
-      case 'number':
-        tsType = 'number';
-        break;
-      case 'boolean':
-        tsType = 'boolean';
-        break;
-      default:
-        tsType = 'string';
-    }
+    let tsType = tsTypeForProperty(param);
     if (param.isArray) tsType = `${tsType}[]`;
 
     const argsOpts: string[] = [];
@@ -106,15 +99,8 @@ export function generateResolver(
   });
 
   // Import DTOs if any endpoint has a request body
-  const hasDtos = controller.endpoints.some((e) => e.requestBody);
-  if (hasDtos) {
-    const dtoNames = [
-      ...new Set(
-        controller.endpoints
-          .filter((e) => e.requestBody)
-          .map((e) => e.requestBody!.name),
-      ),
-    ];
+  const dtoNames = collectDtoNames(controller);
+  if (dtoNames.length > 0) {
     sourceFile.addImportDeclaration({
       moduleSpecifier: `./${controller.name.toLowerCase()}.dto`,
       namedImports: dtoNames,

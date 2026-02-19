@@ -1,6 +1,6 @@
 import type { SourceFile } from 'ts-morph';
 import type { ParsedController, ParsedEndpoint } from '../parser/types.js';
-import { toCamelCase, toPascalCase, tsTypeForProperty } from './utils.js';
+import { collectDtoNames, toCamelCase, toPascalCase, tsTypeForProperty } from './utils.js';
 
 function buildApiMethodCall(
   controller: ParsedController,
@@ -90,13 +90,7 @@ export function generateService(
   });
 
   // Import DTOs if any endpoint has a request body
-  const dtoNames = [
-    ...new Set(
-      controller.endpoints
-        .filter((e) => e.requestBody)
-        .map((e) => e.requestBody!.name),
-    ),
-  ];
+  const dtoNames = collectDtoNames(controller);
   if (dtoNames.length > 0) {
     sourceFile.addImportDeclaration({
       moduleSpecifier: `./${controller.name.toLowerCase()}.dto`,

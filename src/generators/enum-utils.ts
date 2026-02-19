@@ -1,6 +1,22 @@
+import type { ParsedProperty } from '../parser/types.js';
 import { toPascalCase } from './utils.js';
 
 export { deriveEnumName } from '../parser/enums.js';
+
+export function collectEnumNamesFromProperties(properties: ParsedProperty[]): Set<string> {
+  const names = new Set<string>();
+  for (const prop of properties) {
+    if (prop.type === 'enum' && prop.enumName) {
+      names.add(prop.enumName);
+    }
+    if (prop.properties) {
+      for (const name of collectEnumNamesFromProperties(prop.properties)) {
+        names.add(name);
+      }
+    }
+  }
+  return names;
+}
 
 /**
  * Derive a PascalCase enum member name from a value.
