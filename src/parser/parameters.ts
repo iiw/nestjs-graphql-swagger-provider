@@ -1,7 +1,7 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ParsedParameter } from './types.js';
 import type { RefMap } from './ref-resolver.js';
-import { mapOpenApiType } from './type-mapping.js';
+import { extractEnumValues, mapOpenApiType } from './type-mapping.js';
 import { deriveEnumName } from './enums.js';
 
 export function extractParameters(
@@ -26,12 +26,7 @@ export function extractParameters(
         isArray: mapped.isArray,
       };
 
-      // Get enum values — handle array-of-enum case where values are on items
-      const enumValues = mapped.isArray
-        ? (((schema as unknown as Record<string, unknown> | undefined)?.items as OpenAPIV3_1.SchemaObject | undefined)?.enum as
-            | (string | number)[]
-            | undefined)
-        : (schema?.enum as (string | number)[] | undefined);
+      const enumValues = schema ? extractEnumValues(schema, mapped.isArray) : undefined;
 
       if (mapped.type === 'enum' && enumValues) {
         parsedParam.enumValues = enumValues;

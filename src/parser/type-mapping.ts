@@ -1,5 +1,17 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
 
+export function extractEnumValues(
+  schema: OpenAPIV3_1.SchemaObject,
+  isArray: boolean,
+): (string | number)[] | undefined {
+  if (isArray) {
+    return ((schema as unknown as Record<string, unknown>).items as OpenAPIV3_1.SchemaObject | undefined)?.enum as
+      | (string | number)[]
+      | undefined;
+  }
+  return schema.enum as (string | number)[] | undefined;
+}
+
 export function mapOpenApiType(
   schema: OpenAPIV3_1.SchemaObject,
 ): { type: string; isArray: boolean } {

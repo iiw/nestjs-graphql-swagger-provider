@@ -8,7 +8,7 @@ import { generateModels } from './generators/models.js';
 import { generateModule } from './generators/module.js';
 import { generateResolver } from './generators/resolver.js';
 import { generateService } from './generators/service.js';
-import { toKebabCase } from './generators/utils.js';
+import { toKebabCase } from './utils.js';
 import { parseSpec } from './parser/parse-spec.js';
 
 export async function generate(input: string, output: string): Promise<void> {

@@ -16,162 +16,161 @@ export function extractRefName(ref: string): string {
   return ref.split('/').pop()!;
 }
 
-export async function buildRefMap(input: string): Promise<RefMap> {
-  const raw = (await SwaggerParser.parse(input)) as OpenAPIV3_1.Document;
+function extractRefFromSchema(
+  schema: OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
+): string | undefined {
+  if ('$ref' in schema) {
+    return extractRefName(schema.$ref);
+  }
+  if (
+    schema.type === 'array' &&
+    schema.items &&
+    '$ref' in (schema.items as OpenAPIV3_1.ReferenceObject)
+  ) {
+    return extractRefName((schema.items as OpenAPIV3_1.ReferenceObject).$ref);
+  }
+  return undefined;
+}
 
-  const version =
-    (raw as unknown as Record<string, string>).openapi ??
-    (raw as unknown as Record<string, string>).swagger;
+function validateOpenApiVersion(raw: Record<string, unknown>): void {
+  const version = (raw.openapi ?? raw.swagger) as string | undefined;
   if (!version || (!version.startsWith('3.0') && !version.startsWith('3.1'))) {
     throw new Error(
       `Unsupported OpenAPI version "${version ?? 'unknown'}". Only OpenAPI 3.0.x and 3.1.x are supported.`,
     );
   }
+}
 
+function extractSchemaRefs(
+  schemas: Record<string, OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject>,
+): { schemaProperties: Map<string, Map<string, string>>; schemaInheritance: Map<string, string> } {
   const schemaProperties = new Map<string, Map<string, string>>();
-  const operationSchemas = new Map<string, string>();
-  const parameterSchemas = new Map<string, Map<string, string>>();
   const schemaInheritance = new Map<string, string>();
 
-  // Walk components/schemas for property $refs
-  const schemas = raw.components?.schemas as
-    | Record<string, OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject>
-    | undefined;
+  for (const [schemaName, schema] of Object.entries(schemas)) {
+    if ('$ref' in schema) continue;
 
-  if (schemas) {
-    for (const [schemaName, schema] of Object.entries(schemas)) {
-      if ('$ref' in schema) continue;
-
-      // Detect allOf inheritance: first $ref entry is the parent
-      if (schema.allOf && Array.isArray(schema.allOf)) {
-        const parentRef = schema.allOf.find(
-          (entry): entry is OpenAPIV3_1.ReferenceObject => '$ref' in entry,
-        );
-        if (parentRef) {
-          schemaInheritance.set(schemaName, extractRefName(parentRef.$ref));
-        }
+    // Detect allOf inheritance: first $ref entry is the parent
+    if (schema.allOf && Array.isArray(schema.allOf)) {
+      const parentRef = schema.allOf.find(
+        (entry): entry is OpenAPIV3_1.ReferenceObject => '$ref' in entry,
+      );
+      if (parentRef) {
+        schemaInheritance.set(schemaName, extractRefName(parentRef.$ref));
       }
+    }
 
-      if (!schema.properties) continue;
+    if (!schema.properties) continue;
 
-      const propMap = new Map<string, string>();
-      for (const [propName, propSchema] of Object.entries(schema.properties)) {
-        const prop = propSchema as OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject;
-        if ('$ref' in prop) {
-          propMap.set(propName, extractRefName(prop.$ref));
-        } else if (
-          prop.type === 'array' &&
-          prop.items &&
-          '$ref' in (prop.items as OpenAPIV3_1.ReferenceObject)
-        ) {
-          propMap.set(propName, extractRefName((prop.items as OpenAPIV3_1.ReferenceObject).$ref));
-        }
+    const propMap = new Map<string, string>();
+    for (const [propName, propSchema] of Object.entries(schema.properties)) {
+      const ref = extractRefFromSchema(
+        propSchema as OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
+      );
+      if (ref) {
+        propMap.set(propName, ref);
       }
-      if (propMap.size > 0) {
-        schemaProperties.set(schemaName, propMap);
-      }
+    }
+    if (propMap.size > 0) {
+      schemaProperties.set(schemaName, propMap);
     }
   }
 
-  // Walk paths for operation response/requestBody $refs and parameter $refs
-  if (raw.paths) {
-    const methods = ['get', 'post', 'put', 'patch', 'delete'] as const;
+  return { schemaProperties, schemaInheritance };
+}
 
-    for (const [, pathItem] of Object.entries(raw.paths)) {
-      if (!pathItem) continue;
+function extractOperationRefs(paths: OpenAPIV3_1.PathsObject): {
+  operationSchemas: Map<string, string>;
+  parameterSchemas: Map<string, Map<string, string>>;
+} {
+  const operationSchemas = new Map<string, string>();
+  const parameterSchemas = new Map<string, Map<string, string>>();
+  const methods = ['get', 'post', 'put', 'patch', 'delete'] as const;
 
-      for (const method of methods) {
-        const operation = pathItem[method] as OpenAPIV3_1.OperationObject | undefined;
-        if (!operation?.operationId) continue;
+  for (const [, pathItem] of Object.entries(paths)) {
+    if (!pathItem) continue;
 
-        const operationId = operation.operationId;
+    for (const method of methods) {
+      const operation = pathItem[method] as OpenAPIV3_1.OperationObject | undefined;
+      if (!operation?.operationId) continue;
 
-        // Response schema refs
-        if (operation.responses) {
-          const successResponse = (operation.responses['200'] ??
-            operation.responses['201']) as
-            | OpenAPIV3_1.ResponseObject
-            | OpenAPIV3_1.ReferenceObject
-            | undefined;
+      const operationId = operation.operationId;
 
-          if (successResponse && !('$ref' in successResponse)) {
-            const jsonContent = successResponse.content?.['application/json'];
-            if (jsonContent?.schema) {
-              const respSchema = jsonContent.schema as
-                | OpenAPIV3_1.SchemaObject
-                | OpenAPIV3_1.ReferenceObject;
-              if ('$ref' in respSchema) {
-                operationSchemas.set(`${operationId}:response`, extractRefName(respSchema.$ref));
-              } else if (
-                respSchema.type === 'array' &&
-                respSchema.items &&
-                '$ref' in (respSchema.items as OpenAPIV3_1.ReferenceObject)
-              ) {
-                operationSchemas.set(
-                  `${operationId}:response`,
-                  extractRefName((respSchema.items as OpenAPIV3_1.ReferenceObject).$ref),
-                );
-              }
-            }
-          }
-        }
+      // Response schema refs
+      if (operation.responses) {
+        const successResponse = (operation.responses['200'] ??
+          operation.responses['201']) as
+          | OpenAPIV3_1.ResponseObject
+          | OpenAPIV3_1.ReferenceObject
+          | undefined;
 
-        // Request body schema refs
-        if (operation.requestBody && !('$ref' in operation.requestBody)) {
-          const jsonContent = operation.requestBody.content?.['application/json'];
+        if (successResponse && !('$ref' in successResponse)) {
+          const jsonContent = successResponse.content?.['application/json'];
           if (jsonContent?.schema) {
-            const reqSchema = jsonContent.schema as
-              | OpenAPIV3_1.SchemaObject
-              | OpenAPIV3_1.ReferenceObject;
-            if ('$ref' in reqSchema) {
-              operationSchemas.set(
-                `${operationId}:requestBody`,
-                extractRefName(reqSchema.$ref),
-              );
-            } else if (
-              reqSchema.type === 'array' &&
-              reqSchema.items &&
-              '$ref' in (reqSchema.items as OpenAPIV3_1.ReferenceObject)
-            ) {
-              operationSchemas.set(
-                `${operationId}:requestBody`,
-                extractRefName((reqSchema.items as OpenAPIV3_1.ReferenceObject).$ref),
-              );
+            const ref = extractRefFromSchema(
+              jsonContent.schema as OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
+            );
+            if (ref) {
+              operationSchemas.set(`${operationId}:response`, ref);
             }
           }
         }
+      }
 
-        // Parameter schema refs
-        if (operation.parameters) {
-          const paramMap = new Map<string, string>();
-          for (const param of operation.parameters) {
-            if ('$ref' in param) continue;
-            const paramObj = param as OpenAPIV3_1.ParameterObject;
-            if (paramObj.schema) {
-              const paramSchema = paramObj.schema as
-                | OpenAPIV3_1.SchemaObject
-                | OpenAPIV3_1.ReferenceObject;
-              if ('$ref' in paramSchema) {
-                paramMap.set(paramObj.name, extractRefName(paramSchema.$ref));
-              } else if (
-                paramSchema.type === 'array' &&
-                paramSchema.items &&
-                '$ref' in (paramSchema.items as OpenAPIV3_1.ReferenceObject)
-              ) {
-                paramMap.set(
-                  paramObj.name,
-                  extractRefName((paramSchema.items as OpenAPIV3_1.ReferenceObject).$ref),
-                );
-              }
+      // Request body schema refs
+      if (operation.requestBody && !('$ref' in operation.requestBody)) {
+        const jsonContent = operation.requestBody.content?.['application/json'];
+        if (jsonContent?.schema) {
+          const ref = extractRefFromSchema(
+            jsonContent.schema as OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
+          );
+          if (ref) {
+            operationSchemas.set(`${operationId}:requestBody`, ref);
+          }
+        }
+      }
+
+      // Parameter schema refs
+      if (operation.parameters) {
+        const paramMap = new Map<string, string>();
+        for (const param of operation.parameters) {
+          if ('$ref' in param) continue;
+          const paramObj = param as OpenAPIV3_1.ParameterObject;
+          if (paramObj.schema) {
+            const ref = extractRefFromSchema(
+              paramObj.schema as OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject,
+            );
+            if (ref) {
+              paramMap.set(paramObj.name, ref);
             }
           }
-          if (paramMap.size > 0) {
-            parameterSchemas.set(operationId, paramMap);
-          }
+        }
+        if (paramMap.size > 0) {
+          parameterSchemas.set(operationId, paramMap);
         }
       }
     }
   }
+
+  return { operationSchemas, parameterSchemas };
+}
+
+export async function buildRefMap(input: string): Promise<RefMap> {
+  const raw = (await SwaggerParser.parse(input)) as OpenAPIV3_1.Document;
+  validateOpenApiVersion(raw as unknown as Record<string, unknown>);
+
+  const { schemaProperties, schemaInheritance } = raw.components?.schemas
+    ? extractSchemaRefs(
+        raw.components.schemas as Record<
+          string,
+          OpenAPIV3_1.SchemaObject | OpenAPIV3_1.ReferenceObject
+        >,
+      )
+    : { schemaProperties: new Map<string, Map<string, string>>(), schemaInheritance: new Map<string, string>() };
+
+  const { operationSchemas, parameterSchemas } = raw.paths
+    ? extractOperationRefs(raw.paths)
+    : { operationSchemas: new Map<string, string>(), parameterSchemas: new Map<string, Map<string, string>>() };
 
   return { schemaProperties, operationSchemas, parameterSchemas, schemaInheritance };
 }

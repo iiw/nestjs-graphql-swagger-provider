@@ -5,7 +5,7 @@ import type {
   ParsedProperty,
   ParsedSchema,
 } from './types.js';
-import { toPascalCase } from '../generators/utils.js';
+import { toPascalCase } from '../utils.js';
 
 /**
  * Derive an enum name from a parent schema name and property name.
@@ -36,6 +36,10 @@ export function extractGlobalEnums(
   return enums;
 }
 
+function inferEnumType(values: (string | number)[]): 'string' | 'integer' {
+  return values.every((v) => typeof v === 'number') ? 'integer' : 'string';
+}
+
 export function collectInlineEnums(
   controllers: ParsedController[],
   schemas: ParsedSchema[],
@@ -47,11 +51,10 @@ export function collectInlineEnums(
     for (const prop of properties) {
       if (prop.type === 'enum' && prop.enumName && prop.enumValues && !globalEnumNames.has(prop.enumName)) {
         if (!enumMap.has(prop.enumName)) {
-          const enumType = prop.enumValues.every((v) => typeof v === 'number') ? 'integer' : 'string';
           enumMap.set(prop.enumName, {
             name: prop.enumName,
             values: prop.enumValues,
-            type: enumType as 'string' | 'integer',
+            type: inferEnumType(prop.enumValues),
           });
         }
       }
@@ -72,11 +75,10 @@ export function collectInlineEnums(
       for (const param of endpoint.parameters) {
         if (param.type === 'enum' && param.enumName && param.enumValues && !globalEnumNames.has(param.enumName)) {
           if (!enumMap.has(param.enumName)) {
-            const enumType = param.enumValues.every((v) => typeof v === 'number') ? 'integer' : 'string';
             enumMap.set(param.enumName, {
               name: param.enumName,
               values: param.enumValues,
-              type: enumType as 'string' | 'integer',
+              type: inferEnumType(param.enumValues),
             });
           }
         }

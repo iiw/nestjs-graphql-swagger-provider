@@ -1,7 +1,7 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ParsedProperty } from './types.js';
 import type { RefMap } from './ref-resolver.js';
-import { mapOpenApiType } from './type-mapping.js';
+import { extractEnumValues, mapOpenApiType } from './type-mapping.js';
 import { deriveEnumName } from './enums.js';
 
 /** Merge allOf entries into a single flat schema with combined properties and required. */
@@ -64,12 +64,7 @@ export function extractProperties(
         (Array.isArray(prop.type) && (prop.type as string[]).includes('null')),
     };
 
-    // Get enum values — handle array-of-enum case where values are on items
-    const enumValues = mapped.isArray
-      ? (((prop as unknown as Record<string, unknown>).items as OpenAPIV3_1.SchemaObject | undefined)?.enum as
-          | (string | number)[]
-          | undefined)
-      : (prop.enum as (string | number)[] | undefined);
+    const enumValues = extractEnumValues(prop, mapped.isArray);
 
     if (mapped.type === 'enum' && enumValues) {
       parsedProp.enumValues = enumValues;

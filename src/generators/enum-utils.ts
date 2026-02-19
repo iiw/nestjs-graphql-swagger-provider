@@ -1,5 +1,5 @@
 import type { ParsedProperty } from '../parser/types.js';
-import { toPascalCase } from './utils.js';
+import { toPascalCase } from '../utils.js';
 
 export { deriveEnumName } from '../parser/enums.js';
 
