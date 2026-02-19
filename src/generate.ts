@@ -47,21 +47,29 @@ export async function generate(input: string, output: string): Promise<void> {
 
     console.log(`Generating module: ${controller.name}...`);
 
-    // Generate models
-    const modelsFile = project.createSourceFile(
-      path.join(controllerDir, `${baseName}.models.ts`),
-      '',
-      { overwrite: true },
+    // Generate models (skip if no non-primitive response schemas)
+    const hasModels = controller.endpoints.some(
+      (e) => e.responseSchema && !e.responseSchema.primitiveType,
     );
-    generateModels(modelsFile, controller, spec.schemas);
+    if (hasModels) {
+      const modelsFile = project.createSourceFile(
+        path.join(controllerDir, `${baseName}.models.ts`),
+        '',
+        { overwrite: true },
+      );
+      generateModels(modelsFile, controller, spec.schemas);
+    }
 
-    // Generate DTOs
-    const dtosFile = project.createSourceFile(
-      path.join(controllerDir, `${baseName}.dto.ts`),
-      '',
-      { overwrite: true },
-    );
-    generateDtos(dtosFile, controller, spec.schemas);
+    // Generate DTOs (skip if no request bodies)
+    const hasDtos = controller.endpoints.some((e) => e.requestBody);
+    if (hasDtos) {
+      const dtosFile = project.createSourceFile(
+        path.join(controllerDir, `${baseName}.dto.ts`),
+        '',
+        { overwrite: true },
+      );
+      generateDtos(dtosFile, controller, spec.schemas);
+    }
 
     // Generate service
     const serviceFile = project.createSourceFile(

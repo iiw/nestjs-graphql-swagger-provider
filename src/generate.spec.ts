@@ -563,15 +563,16 @@ describe('generate with primitive responses', () => {
     expect(content).toContain('@Mutation(() => Boolean)');
   });
 
-  it('should not generate model classes for primitive-response endpoints', async () => {
+  it('should not generate models file for primitive-response endpoints', async () => {
     await generate(PRIMITIVES_FIXTURE_PATH, outputDir);
 
-    const content = fs.readFileSync(
-      path.join(outputDir, 'status', 'status.models.ts'),
-      'utf-8',
-    );
-    expect(content).not.toContain('@ObjectType()');
-    expect(content).not.toContain('class ');
+    expect(fs.existsSync(path.join(outputDir, 'status', 'status.models.ts'))).toBe(false);
+  });
+
+  it('should not generate dto file when no request bodies exist', async () => {
+    await generate(PRIMITIVES_FIXTURE_PATH, outputDir);
+
+    expect(fs.existsSync(path.join(outputDir, 'status', 'status.dto.ts'))).toBe(false);
   });
 
   it('should not import models in resolver when all responses are primitives', async () => {
