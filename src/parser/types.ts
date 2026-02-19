@@ -25,6 +25,10 @@ export interface ParsedSchema {
   properties: ParsedProperty[];
   /** Parent schema name from allOf composition */
   extends?: string;
+  /** OpenAPI primitive type when schema has no object properties */
+  primitiveType?: 'string' | 'number' | 'integer' | 'boolean';
+  /** Whether the outer schema was type: array */
+  isArray?: boolean;
 }
 
 export interface ParsedParameter {

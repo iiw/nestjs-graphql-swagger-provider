@@ -8,6 +8,7 @@ const FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore.json');
 const ENUM_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-enums.json');
 const REFS_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-refs.json');
 const ALLOF_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-allof.json');
+const PRIMITIVES_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-primitives.json');
 
 describe('generate', () => {
   let outputDir: string;
@@ -496,5 +497,99 @@ describe('generate service request body types', () => {
     );
     expect(content).toContain('CreatePetInput');
     expect(content).toContain("from './pets.dto'");
+  });
+});
+
+describe('generate with primitive responses', () => {
+  let outputDir: string;
+
+  beforeEach(() => {
+    outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nestjs-graphql-prim-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  it('should use @Query(() => String) for string response', async () => {
+    await generate(PRIMITIVES_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'status', 'status.resolver.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('() => String');
+  });
+
+  it('should use @Query(() => Int) for integer response', async () => {
+    await generate(PRIMITIVES_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'status', 'status.resolver.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('() => Int');
+  });
+
+  it('should use @Query(() => Boolean) for boolean response', async () => {
+    await generate(PRIMITIVES_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'status', 'status.resolver.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('() => Boolean');
+  });
+
+  it('should use @Query(() => [String]) for string array response', async () => {
+    await generate(PRIMITIVES_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'status', 'status.resolver.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('() => [String]');
+  });
+
+  it('should use @Mutation(() => Boolean) for no-response endpoint', async () => {
+    await generate(PRIMITIVES_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'status', 'status.resolver.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('@Mutation(() => Boolean)');
+  });
+
+  it('should not generate model classes for primitive-response endpoints', async () => {
+    await generate(PRIMITIVES_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'status', 'status.models.ts'),
+      'utf-8',
+    );
+    expect(content).not.toContain('@ObjectType()');
+    expect(content).not.toContain('class ');
+  });
+
+  it('should not import models in resolver when all responses are primitives', async () => {
+    await generate(PRIMITIVES_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'status', 'status.resolver.ts'),
+      'utf-8',
+    );
+    expect(content).not.toContain('status.models');
+  });
+
+  it('should import Int from @nestjs/graphql when integer response exists', async () => {
+    await generate(PRIMITIVES_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'status', 'status.resolver.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('Int');
+    expect(content).toContain("from '@nestjs/graphql'");
   });
 });

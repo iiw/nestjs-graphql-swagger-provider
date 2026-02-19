@@ -1,6 +1,6 @@
 import type { SourceFile } from 'ts-morph';
 import type { ParsedController, ParsedEndpoint } from '../parser/types.js';
-import { toCamelCase, toPascalCase } from './utils.js';
+import { graphqlScalarForPrimitive, toCamelCase, toPascalCase } from './utils.js';
 
 function isQuery(method: string): boolean {
   return method === 'get';
@@ -91,6 +91,10 @@ export function generateResolver(
   const serviceVarName = `${toCamelCase(controller.name)}Service`;
 
   const gqlImports = ['Resolver', 'Query', 'Mutation', 'Args'];
+  const needsInt = controller.endpoints.some(
+    (e) => e.responseSchema?.primitiveType === 'integer',
+  );
+  if (needsInt) gqlImports.push('Int');
   sourceFile.addImportDeclaration({
     moduleSpecifier: '@nestjs/graphql',
     namedImports: gqlImports,
@@ -139,9 +143,17 @@ export function generateResolver(
     const serviceCallArgs = buildServiceCallArgs(endpoint);
     const decoratorName = isQuery(endpoint.method) ? 'Query' : 'Mutation';
 
-    const returnTypeArg = endpoint.responseSchema
-      ? `() => ${endpoint.responseSchema.name}`
-      : '() => Boolean';
+    let returnTypeArg: string;
+    if (endpoint.responseSchema?.primitiveType) {
+      const scalar = graphqlScalarForPrimitive(endpoint.responseSchema.primitiveType);
+      returnTypeArg = endpoint.responseSchema.isArray
+        ? `() => [${scalar}]`
+        : `() => ${scalar}`;
+    } else if (endpoint.responseSchema) {
+      returnTypeArg = `() => ${endpoint.responseSchema.name}`;
+    } else {
+      returnTypeArg = '() => Boolean';
+    }
 
     return {
       name: methodName,
@@ -153,16 +165,15 @@ export function generateResolver(
     };
   });
 
-  // Import models if any endpoint has response schema
-  const hasModels = controller.endpoints.some((e) => e.responseSchema);
-  if (hasModels) {
-    const modelNames = [
-      ...new Set(
-        controller.endpoints
-          .filter((e) => e.responseSchema)
-          .map((e) => e.responseSchema!.name),
-      ),
-    ];
+  // Import models if any endpoint has a non-primitive response schema
+  const modelNames = [
+    ...new Set(
+      controller.endpoints
+        .filter((e) => e.responseSchema && !e.responseSchema.primitiveType)
+        .map((e) => e.responseSchema!.name),
+    ),
+  ];
+  if (modelNames.length > 0) {
     sourceFile.addImportDeclaration({
       moduleSpecifier: `./${controller.name.toLowerCase()}.models`,
       namedImports: modelNames,

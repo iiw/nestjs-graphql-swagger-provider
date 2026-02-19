@@ -82,7 +82,7 @@ export function generateModels(
   const schemaMap = new Map<string, ParsedSchema>();
 
   for (const endpoint of controller.endpoints) {
-    if (endpoint.responseSchema) {
+    if (endpoint.responseSchema && !endpoint.responseSchema.primitiveType) {
       schemaMap.set(endpoint.responseSchema.name, endpoint.responseSchema);
     }
   }
