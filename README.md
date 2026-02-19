@@ -6,7 +6,7 @@
 
 ## What It Does
 
-Point it at an OpenAPI 3.1 spec. It generates:
+Point it at an OpenAPI 3.0 or 3.1 spec. It generates:
 
 ```
 <output-dir>/

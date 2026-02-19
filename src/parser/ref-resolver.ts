@@ -19,6 +19,15 @@ export function extractRefName(ref: string): string {
 export async function buildRefMap(input: string): Promise<RefMap> {
   const raw = (await SwaggerParser.parse(input)) as OpenAPIV3_1.Document;
 
+  const version =
+    (raw as unknown as Record<string, string>).openapi ??
+    (raw as unknown as Record<string, string>).swagger;
+  if (!version || (!version.startsWith('3.0') && !version.startsWith('3.1'))) {
+    throw new Error(
+      `Unsupported OpenAPI version "${version ?? 'unknown'}". Only OpenAPI 3.0.x and 3.1.x are supported.`,
+    );
+  }
+
   const schemaProperties = new Map<string, Map<string, string>>();
   const operationSchemas = new Map<string, string>();
   const parameterSchemas = new Map<string, Map<string, string>>();

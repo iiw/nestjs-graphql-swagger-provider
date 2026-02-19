@@ -9,6 +9,8 @@ const ENUM_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-enums.j
 const REFS_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-refs.json');
 const ALLOF_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-allof.json');
 const PRIMITIVES_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-primitives.json');
+const V30_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-v30.json');
+const SWAGGER_V20_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/swagger-v20.json');
 
 describe('generate', () => {
   let outputDir: string;
@@ -694,5 +696,120 @@ describe('generate request config factory', () => {
     expect(content).toContain("this.requestConfigFactory?.('listPets', { limit })");
     // createPet has an 'input' request body
     expect(content).toContain("this.requestConfigFactory?.('createPet', { input })");
+  });
+});
+
+describe('generate with OpenAPI 3.0 spec', () => {
+  let outputDir: string;
+
+  beforeEach(() => {
+    outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nestjs-graphql-v30-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  it('should generate all expected files from a 3.0 spec', async () => {
+    await generate(V30_FIXTURE_PATH, outputDir);
+
+    const petsDir = path.join(outputDir, 'pets');
+    expect(fs.existsSync(petsDir)).toBe(true);
+
+    for (const file of [
+      'pets.module.ts',
+      'pets.resolver.ts',
+      'pets.service.ts',
+      'pets.models.ts',
+      'pets.dto.ts',
+    ]) {
+      expect(fs.existsSync(path.join(petsDir, file))).toBe(true);
+    }
+  });
+
+  it('should generate models with @ObjectType from 3.0 spec', async () => {
+    await generate(V30_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.models.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('@ObjectType()');
+    expect(content).toContain('class Pet');
+    expect(content).toContain('@Field()');
+  });
+
+  it('should handle 3.0 nullable: true correctly', async () => {
+    await generate(V30_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.models.ts'),
+      'utf-8',
+    );
+    // age is nullable: true in the 3.0 fixture
+    expect(content).toContain('nullable: true');
+  });
+
+  it('should generate DTOs with @InputType from 3.0 spec', async () => {
+    await generate(V30_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.dto.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('@InputType()');
+    expect(content).toContain('class CreatePetInput');
+  });
+
+  it('should generate service with correct HTTP methods from 3.0 spec', async () => {
+    await generate(V30_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('this.httpClient.get');
+    expect(content).toContain('this.httpClient.post');
+  });
+
+  it('should generate resolver with @Query and @Mutation from 3.0 spec', async () => {
+    await generate(V30_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.resolver.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('@Query(');
+    expect(content).toContain('@Mutation(');
+  });
+
+  it('should generate error handling from 3.0 spec', async () => {
+    await generate(V30_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+    // createPet has a 400 error response
+    expect(content).toContain('HttpException');
+    expect(content).toContain('400');
+  });
+});
+
+describe('generate version validation', () => {
+  let outputDir: string;
+
+  beforeEach(() => {
+    outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nestjs-graphql-version-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  it('should reject Swagger 2.0 specs with a clear error', async () => {
+    await expect(generate(SWAGGER_V20_FIXTURE_PATH, outputDir)).rejects.toThrow(
+      'Unsupported OpenAPI version "2.0"',
+    );
   });
 });

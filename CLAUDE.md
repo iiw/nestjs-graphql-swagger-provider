@@ -80,6 +80,6 @@ The generated code requires these packages in the consuming project:
 - Generated services use the REST client to proxy requests to the original API
 - Generated code is organized by feature (one folder per Swagger controller)
 - The Swagger REST client is placed in a single file for easy regeneration
-- **OpenAPI 3.1** only
+- **OpenAPI 3.0+** (supports 3.0.x and 3.1.x)
 - **Overwrite** on regeneration — no prompts, no skip logic
 - If error responses are declared in the OpenAPI spec, generate corresponding error handling in services; otherwise let exceptions propagate
