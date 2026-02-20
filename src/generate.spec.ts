@@ -12,6 +12,10 @@ const PRIMITIVES_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-p
 const V30_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-v30.json');
 const SWAGGER_V20_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/swagger-v20.json');
 const HYPHENATED_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-hyphenated.json');
+const SOPHISTICATED_FIXTURE_PATH = path.resolve(
+  __dirname,
+  '__fixtures__/sophisticated-swagger.json',
+);
 
 describe('generate', () => {
   let outputDir: string;
@@ -1087,6 +1091,111 @@ describe('generate service-to-api-client consistency', () => {
         apiClientContent,
         `Service uses namespace "${ns}" but it doesn't exist in api-client.ts`,
       ).toMatch(new RegExp(`\\b${ns}\\b\\s*=\\s*\\{`));
+    }
+  });
+});
+
+describe('generate with sophisticated real-world spec', () => {
+  let outputDir: string;
+
+  beforeEach(() => {
+    outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nestjs-graphql-sophisticated-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  function getAllTsFiles(dir: string): string[] {
+    const results: string[] = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        results.push(...getAllTsFiles(fullPath));
+      } else if (entry.name.endsWith('.ts')) {
+        results.push(fullPath);
+      }
+    }
+    return results;
+  }
+
+  it('should generate without errors', async () => {
+    await expect(generate(SOPHISTICATED_FIXTURE_PATH, outputDir)).resolves.not.toThrow();
+  });
+
+  it('all filenames should use kebab-case (no spaces)', async () => {
+    await generate(SOPHISTICATED_FIXTURE_PATH, outputDir);
+
+    const allFiles = getAllTsFiles(outputDir);
+    expect(allFiles.length).toBeGreaterThan(0);
+
+    for (const filePath of allFiles) {
+      const basename = path.basename(filePath);
+      expect(basename, `Filename "${basename}" contains a space`).not.toContain(' ');
+    }
+  });
+
+  it('all generated class names should be valid TypeScript identifiers', async () => {
+    await generate(SOPHISTICATED_FIXTURE_PATH, outputDir);
+
+    const allFiles = getAllTsFiles(outputDir);
+    const modelAndDtoFiles = allFiles.filter(
+      (f) => f.endsWith('.models.ts') || f.endsWith('.dto.ts'),
+    );
+    expect(modelAndDtoFiles.length).toBeGreaterThan(0);
+
+    for (const filePath of modelAndDtoFiles) {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const classNames = [...content.matchAll(/class (\S+)/g)].map((m) => m[1]);
+
+      for (const name of classNames) {
+        expect(
+          name,
+          `Class name "${name}" in ${path.basename(filePath)} contains a hyphen`,
+        ).not.toContain('-');
+      }
+    }
+  });
+
+  it('all import paths should use kebab-case (no spaces)', async () => {
+    await generate(SOPHISTICATED_FIXTURE_PATH, outputDir);
+
+    const allFiles = getAllTsFiles(outputDir).filter(
+      (f) => !f.endsWith('api-client.ts'),
+    );
+
+    for (const filePath of allFiles) {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const importPaths = [...content.matchAll(/from\s+['"](\.[^'"]+)['"]/g)].map(
+        (m) => m[1],
+      );
+
+      for (const importPath of importPaths) {
+        expect(
+          importPath,
+          `Import path "${importPath}" in ${path.basename(filePath)} contains a space`,
+        ).not.toContain(' ');
+      }
+    }
+  });
+
+  it('should create expected controller folders for multi-word tags', async () => {
+    await generate(SOPHISTICATED_FIXTURE_PATH, outputDir);
+
+    const expectedFolders = [
+      'stake-pools',
+      'byron-wallets',
+      'byron-addresses',
+      'byron-transactions',
+      'byron-coin-selections',
+      'byron-migrations',
+    ];
+
+    for (const folder of expectedFolders) {
+      expect(
+        fs.existsSync(path.join(outputDir, folder)),
+        `Expected folder "${folder}" to exist`,
+      ).toBe(true);
     }
   });
 });
