@@ -2,7 +2,7 @@ import type { SourceFile } from 'ts-morph';
 import type { ParsedController, ParsedEndpoint } from '../parser/types.js';
 import { collectDtoNames } from './collectors.js';
 import { tsTypeForProperty } from './type-mappers.js';
-import { toCamelCase, toPascalCase } from '../utils.js';
+import { toCamelCase, toKebabCase, toPascalCase } from '../utils.js';
 
 function buildApiMethodCall(
   controller: ParsedController,
@@ -97,7 +97,7 @@ export function generateService(
   const dtoNames = collectDtoNames(controller);
   if (dtoNames.length > 0) {
     sourceFile.addImportDeclaration({
-      moduleSpecifier: `./${controller.name.toLowerCase()}.dto`,
+      moduleSpecifier: `./${toKebabCase(controller.name)}.dto`,
       namedImports: dtoNames,
     });
   }

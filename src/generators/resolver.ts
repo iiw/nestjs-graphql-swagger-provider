@@ -6,7 +6,7 @@ import {
   collectParameterEnumNames,
 } from './collectors.js';
 import { graphqlScalarForPrimitive, tsTypeForProperty } from './type-mappers.js';
-import { toCamelCase, toPascalCase } from '../utils.js';
+import { toCamelCase, toKebabCase, toPascalCase } from '../utils.js';
 
 function isQuery(method: string): boolean {
   return method === 'get';
@@ -94,7 +94,7 @@ export function generateResolver(
   });
 
   sourceFile.addImportDeclaration({
-    moduleSpecifier: `./${controller.name.toLowerCase()}.service`,
+    moduleSpecifier: `./${toKebabCase(controller.name)}.service`,
     namedImports: [serviceName],
   });
 
@@ -102,7 +102,7 @@ export function generateResolver(
   const dtoNames = collectDtoNames(controller);
   if (dtoNames.length > 0) {
     sourceFile.addImportDeclaration({
-      moduleSpecifier: `./${controller.name.toLowerCase()}.dto`,
+      moduleSpecifier: `./${toKebabCase(controller.name)}.dto`,
       namedImports: dtoNames,
     });
   }
@@ -148,7 +148,7 @@ export function generateResolver(
   const modelNames = collectModelNames(controller);
   if (modelNames.length > 0) {
     sourceFile.addImportDeclaration({
-      moduleSpecifier: `./${controller.name.toLowerCase()}.models`,
+      moduleSpecifier: `./${toKebabCase(controller.name)}.models`,
       namedImports: modelNames,
     });
   }

@@ -1,6 +1,6 @@
 import type { SourceFile } from 'ts-morph';
 import type { ParsedController } from '../parser/types.js';
-import { toPascalCase } from '../utils.js';
+import { toKebabCase, toPascalCase } from '../utils.js';
 
 export function generateModule(
   sourceFile: SourceFile,
@@ -21,12 +21,12 @@ export function generateModule(
   });
 
   sourceFile.addImportDeclaration({
-    moduleSpecifier: `./${controller.name.toLowerCase()}.resolver`,
+    moduleSpecifier: `./${toKebabCase(controller.name)}.resolver`,
     namedImports: [resolverName],
   });
 
   sourceFile.addImportDeclaration({
-    moduleSpecifier: `./${controller.name.toLowerCase()}.service`,
+    moduleSpecifier: `./${toKebabCase(controller.name)}.service`,
     namedImports: [serviceName],
   });
 
