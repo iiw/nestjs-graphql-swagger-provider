@@ -1,0 +1,26 @@
+{
+  "name": "example-project",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:api": "npx nestjs-graphql-swagger-provider generate --input https://gist.githubusercontent.com/pradoleon/5b82b554625ccd6cfc24694f30b2e671/raw/e8d34f51e1ee5ac7a65a9cf75f8425e8d91b4dbf/gistfile1.txt --output ./src/generated-provider"
+  },
+  "devDependencies": {
+    "nestjs-graphql-swagger-provider": "^0.0.4"
+  },
+  "dependencies": {
+    "@apollo/server": "^5.4.0",
+    "@as-integrations/express5": "^1.1.2",
+    "@nestjs/apollo": "^13.2.4",
+    "@nestjs/common": "^11.1.14",
+    "@nestjs/graphql": "^13.2.4",
+    "axios": "^1.13.5",
+    "graphql": "^16.12.0",
+    "typescript": "^5.9.3"
+  }
+}
