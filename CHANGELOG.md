@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.4
+
+### Bug Fixes
+
+- **API client method names**: Generated services now use the actual method and namespace names from the `swagger-typescript-api` generated client instead of deriving them independently via `toCamelCase(operationId)`. This fixes mismatches where `swagger-typescript-api`'s naming algorithm produces different names (e.g. `pendientesDetail()` vs `getConsultaPendientesFolioLPE()`).
+
 ## 0.0.3
 
 ### Bug Fixes

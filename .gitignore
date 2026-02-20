@@ -5,3 +5,4 @@ coverage/
 .env
 claude.sh
 **/.DS_Store
+.vscode/
