@@ -117,7 +117,13 @@ export function generateSchemaClasses(
       isExported: true,
       extends: schema.extends,
       decorators: [{ name: decoratorName, arguments: [] }],
-      properties: ownProperties.map(buildPropertyDeclaration),
+      properties: ownProperties.map((prop, index) => {
+        const decl = buildPropertyDeclaration(prop);
+        if (index > 0) {
+          decl.leadingTrivia = '\n';
+        }
+        return decl;
+      }),
     });
   }
 }

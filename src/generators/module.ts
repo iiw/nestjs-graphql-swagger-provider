@@ -71,7 +71,7 @@ export function generateModule(
         name: 'register',
         isStatic: true,
         parameters: [
-          { name: 'apiClient', type: 'Api' },
+          { name: 'apiClient', type: 'Api<unknown>' },
           {
             name: 'requestConfigFactory',
             type: 'RequestConfigFactory',

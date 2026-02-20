@@ -139,7 +139,7 @@ export function generateService(
         parameters: [
           {
             name: 'apiClient',
-            type: 'Api',
+            type: 'Api<unknown>',
             isReadonly: true,
             scope: 'private' as unknown as undefined,
             decorators: [{ name: 'Inject', arguments: ["'API_CLIENT'"] }],
