@@ -1,5 +1,7 @@
 # nestjs-graphql-swagger-provider
 
+[![npm version](https://img.shields.io/npm/v/nestjs-graphql-swagger-provider.svg)](https://www.npmjs.com/package/nestjs-graphql-swagger-provider)
+
 > Turn any Swagger/OpenAPI spec into a fully-wired NestJS GraphQL API — in one command.
 
 **This project is in active development. APIs and generated output may change without notice.**
