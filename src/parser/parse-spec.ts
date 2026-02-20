@@ -10,10 +10,12 @@ import { extractGlobalSchemas, schemaToName } from './schemas.js';
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'] as const;
 
-export async function parseSpec(input: string): Promise<ParsedSpec> {
-  const refMap = await buildRefMap(input);
+export async function parseSpec(spec: Record<string, unknown>): Promise<ParsedSpec> {
+  const refMap = buildRefMap(spec);
 
-  const api = (await SwaggerParser.dereference(input)) as OpenAPIV3_1.Document;
+  const api = (await SwaggerParser.dereference(
+    structuredClone(spec) as OpenAPIV3_1.Document,
+  )) as OpenAPIV3_1.Document;
 
   const componentSchemas =
     (api.components?.schemas as Record<string, OpenAPIV3_1.SchemaObject>) ?? undefined;

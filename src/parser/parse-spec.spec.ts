@@ -1,6 +1,11 @@
+import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseSpec } from './parse-spec.js';
+
+function loadFixture(filePath: string): Record<string, unknown> {
+  return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+}
 
 const FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore.json');
 const ENUM_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-enums.json');
@@ -9,7 +14,7 @@ const ALLOF_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-all
 
 describe('parseSpec', () => {
   it('should parse the petstore fixture into controllers', async () => {
-    const spec = await parseSpec(FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(FIXTURE_PATH));
 
     expect(spec.controllers).toHaveLength(2);
 
@@ -18,7 +23,7 @@ describe('parseSpec', () => {
   });
 
   it('should parse Pets controller endpoints', async () => {
-    const spec = await parseSpec(FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
 
     expect(pets.endpoints).toHaveLength(5);
@@ -32,7 +37,7 @@ describe('parseSpec', () => {
   });
 
   it('should extract GET endpoints correctly', async () => {
-    const spec = await parseSpec(FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const listPets = pets.endpoints.find((e) => e.operationId === 'listPets')!;
 
@@ -49,7 +54,7 @@ describe('parseSpec', () => {
   });
 
   it('should extract POST endpoints with request body', async () => {
-    const spec = await parseSpec(FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const createPet = pets.endpoints.find((e) => e.operationId === 'createPet')!;
 
@@ -59,7 +64,7 @@ describe('parseSpec', () => {
   });
 
   it('should extract path parameters', async () => {
-    const spec = await parseSpec(FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const getPet = pets.endpoints.find((e) => e.operationId === 'getPet')!;
 
@@ -73,7 +78,7 @@ describe('parseSpec', () => {
   });
 
   it('should extract error responses', async () => {
-    const spec = await parseSpec(FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const getPet = pets.endpoints.find((e) => e.operationId === 'getPet')!;
 
@@ -82,7 +87,7 @@ describe('parseSpec', () => {
   });
 
   it('should parse global schemas', async () => {
-    const spec = await parseSpec(FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(FIXTURE_PATH));
 
     expect(spec.schemas.length).toBeGreaterThanOrEqual(1);
 
@@ -103,7 +108,7 @@ describe('parseSpec', () => {
   });
 
   it('should parse the Owners controller', async () => {
-    const spec = await parseSpec(FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(FIXTURE_PATH));
     const owners = spec.controllers.find((c) => c.name === 'Owners')!;
 
     expect(owners.endpoints).toHaveLength(1);
@@ -112,14 +117,14 @@ describe('parseSpec', () => {
   });
 
   it('should return an empty enums array when no enums exist', async () => {
-    const spec = await parseSpec(FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(FIXTURE_PATH));
     expect(spec.enums).toEqual([]);
   });
 });
 
 describe('parseSpec enums', () => {
   it('should extract named string enums from components/schemas', async () => {
-    const spec = await parseSpec(ENUM_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(ENUM_FIXTURE_PATH));
 
     const petStatus = spec.enums.find((e) => e.name === 'PetStatus');
     expect(petStatus).toBeDefined();
@@ -128,7 +133,7 @@ describe('parseSpec enums', () => {
   });
 
   it('should extract named integer enums from components/schemas', async () => {
-    const spec = await parseSpec(ENUM_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(ENUM_FIXTURE_PATH));
 
     const priority = spec.enums.find((e) => e.name === 'Priority');
     expect(priority).toBeDefined();
@@ -137,7 +142,7 @@ describe('parseSpec enums', () => {
   });
 
   it('should extract inline string enums and derive names', async () => {
-    const spec = await parseSpec(ENUM_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(ENUM_FIXTURE_PATH));
 
     const petSize = spec.enums.find((e) => e.name === 'PetSize');
     expect(petSize).toBeDefined();
@@ -146,7 +151,7 @@ describe('parseSpec enums', () => {
   });
 
   it('should set enumName on properties referencing a named enum', async () => {
-    const spec = await parseSpec(ENUM_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(ENUM_FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const getPet = pets.endpoints.find((e) => e.operationId === 'getPet')!;
     const statusProp = getPet.responseSchema!.properties.find((p) => p.name === 'status')!;
@@ -157,7 +162,7 @@ describe('parseSpec enums', () => {
   });
 
   it('should set enumName on inline enum properties', async () => {
-    const spec = await parseSpec(ENUM_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(ENUM_FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const getPet = pets.endpoints.find((e) => e.operationId === 'getPet')!;
     const sizeProp = getPet.responseSchema!.properties.find((p) => p.name === 'size')!;
@@ -168,7 +173,7 @@ describe('parseSpec enums', () => {
   });
 
   it('should set enumName on enum query parameters', async () => {
-    const spec = await parseSpec(ENUM_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(ENUM_FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const listPets = pets.endpoints.find((e) => e.operationId === 'listPets')!;
     const statusParam = listPets.parameters.find((p) => p.name === 'status')!;
@@ -179,7 +184,7 @@ describe('parseSpec enums', () => {
   });
 
   it('should not duplicate enums between global and inline', async () => {
-    const spec = await parseSpec(ENUM_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(ENUM_FIXTURE_PATH));
 
     const petStatusEnums = spec.enums.filter((e) => e.name === 'PetStatus');
     expect(petStatusEnums).toHaveLength(1);
@@ -188,7 +193,7 @@ describe('parseSpec enums', () => {
 
 describe('parseSpec $ref resolution', () => {
   it('should use $ref name for response schema instead of synthetic name', async () => {
-    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(REFS_FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const getPet = pets.endpoints.find((e) => e.operationId === 'getPet')!;
 
@@ -197,7 +202,7 @@ describe('parseSpec $ref resolution', () => {
   });
 
   it('should use $ref name for array response schema', async () => {
-    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(REFS_FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const listPets = pets.endpoints.find((e) => e.operationId === 'listPets')!;
 
@@ -206,7 +211,7 @@ describe('parseSpec $ref resolution', () => {
   });
 
   it('should use $ref name for request body instead of synthetic name', async () => {
-    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(REFS_FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const createPet = pets.endpoints.find((e) => e.operationId === 'createPet')!;
 
@@ -215,7 +220,7 @@ describe('parseSpec $ref resolution', () => {
   });
 
   it('should resolve enum name via $ref for schema properties', async () => {
-    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(REFS_FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const getPet = pets.endpoints.find((e) => e.operationId === 'getPet')!;
     const statusProp = getPet.responseSchema!.properties.find((p) => p.name === 'status')!;
@@ -225,7 +230,7 @@ describe('parseSpec $ref resolution', () => {
   });
 
   it('should distinguish colliding enum values via $ref names', async () => {
-    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(REFS_FIXTURE_PATH));
 
     // Both PetStatus and OwnerStatus have ["active", "inactive"]
     const petStatus = spec.enums.find((e) => e.name === 'PetStatus');
@@ -238,7 +243,7 @@ describe('parseSpec $ref resolution', () => {
   });
 
   it('should resolve Pet.status as PetStatus and Owner.status as OwnerStatus', async () => {
-    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(REFS_FIXTURE_PATH));
 
     const petSchema = spec.schemas.find((s) => s.name === 'Pet')!;
     const petStatusProp = petSchema.properties.find((p) => p.name === 'status')!;
@@ -250,7 +255,7 @@ describe('parseSpec $ref resolution', () => {
   });
 
   it('should resolve enum name via $ref for query parameters', async () => {
-    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(REFS_FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const listPets = pets.endpoints.find((e) => e.operationId === 'listPets')!;
     const statusParam = listPets.parameters.find((p) => p.name === 'status')!;
@@ -261,7 +266,7 @@ describe('parseSpec $ref resolution', () => {
   });
 
   it('should resolve array-of-enum parameters via $ref', async () => {
-    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(REFS_FIXTURE_PATH));
     const pets = spec.controllers.find((c) => c.name === 'Pets')!;
     const listPets = pets.endpoints.find((e) => e.operationId === 'listPets')!;
     const statusesParam = listPets.parameters.find((p) => p.name === 'statuses')!;
@@ -273,7 +278,7 @@ describe('parseSpec $ref resolution', () => {
   });
 
   it('should not produce duplicate enums', async () => {
-    const spec = await parseSpec(REFS_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(REFS_FIXTURE_PATH));
 
     const petStatusEnums = spec.enums.filter((e) => e.name === 'PetStatus');
     expect(petStatusEnums).toHaveLength(1);
@@ -285,7 +290,7 @@ describe('parseSpec $ref resolution', () => {
 
 describe('parseSpec allOf', () => {
   it('should set extends on Dog response schema', async () => {
-    const spec = await parseSpec(ALLOF_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(ALLOF_FIXTURE_PATH));
     const dogs = spec.controllers.find((c) => c.name === 'Dogs')!;
     const getDog = dogs.endpoints.find((e) => e.operationId === 'getDog')!;
 
@@ -295,7 +300,7 @@ describe('parseSpec allOf', () => {
   });
 
   it('should include all merged properties on Dog response schema', async () => {
-    const spec = await parseSpec(ALLOF_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(ALLOF_FIXTURE_PATH));
     const dogs = spec.controllers.find((c) => c.name === 'Dogs')!;
     const getDog = dogs.endpoints.find((e) => e.operationId === 'getDog')!;
 
@@ -306,7 +311,7 @@ describe('parseSpec allOf', () => {
   });
 
   it('should set extends on global Dog schema', async () => {
-    const spec = await parseSpec(ALLOF_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(ALLOF_FIXTURE_PATH));
     const dog = spec.schemas.find((s) => s.name === 'Dog');
 
     expect(dog).toBeDefined();
@@ -314,7 +319,7 @@ describe('parseSpec allOf', () => {
   });
 
   it('should set extends on CreateDogInput request body', async () => {
-    const spec = await parseSpec(ALLOF_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(ALLOF_FIXTURE_PATH));
     const dogs = spec.controllers.find((c) => c.name === 'Dogs')!;
     const createDog = dogs.endpoints.find((e) => e.operationId === 'createDog')!;
 
@@ -324,7 +329,7 @@ describe('parseSpec allOf', () => {
   });
 
   it('should not set extends on Animal (no parent)', async () => {
-    const spec = await parseSpec(ALLOF_FIXTURE_PATH);
+    const spec = await parseSpec(loadFixture(ALLOF_FIXTURE_PATH));
     const animal = spec.schemas.find((s) => s.name === 'Animal');
 
     expect(animal).toBeDefined();

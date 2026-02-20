@@ -1,4 +1,3 @@
-import SwaggerParser from '@apidevtools/swagger-parser';
 import type { OpenAPIV3_1 } from 'openapi-types';
 
 export interface RefMap {
@@ -155,9 +154,9 @@ function extractOperationRefs(paths: OpenAPIV3_1.PathsObject): {
   return { operationSchemas, parameterSchemas };
 }
 
-export async function buildRefMap(input: string): Promise<RefMap> {
-  const raw = (await SwaggerParser.parse(input)) as OpenAPIV3_1.Document;
-  validateOpenApiVersion(raw as unknown as Record<string, unknown>);
+export function buildRefMap(spec: Record<string, unknown>): RefMap {
+  validateOpenApiVersion(spec);
+  const raw = spec as unknown as OpenAPIV3_1.Document;
 
   const { schemaProperties, schemaInheritance } = raw.components?.schemas
     ? extractSchemaRefs(

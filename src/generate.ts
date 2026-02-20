@@ -10,6 +10,7 @@ import { generateResolver } from './generators/resolver.js';
 import { generateService } from './generators/service.js';
 import { toKebabCase } from './utils.js';
 import { parseSpec } from './parser/parse-spec.js';
+import { loadSpec } from './parser/spec-loader.js';
 
 export async function generate(input: string, output: string): Promise<void> {
   const outputDir = path.resolve(output);
@@ -17,7 +18,8 @@ export async function generate(input: string, output: string): Promise<void> {
   fs.mkdirSync(outputDir, { recursive: true });
 
   console.log('Parsing OpenAPI spec...');
-  const spec = await parseSpec(input);
+  const rawSpec = await loadSpec(input);
+  const spec = await parseSpec(rawSpec);
 
   console.log('Generating REST client...');
   await generateApiClient(input, outputDir);
