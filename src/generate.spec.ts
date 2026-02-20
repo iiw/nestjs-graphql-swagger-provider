@@ -11,6 +11,7 @@ const ALLOF_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-allof.
 const PRIMITIVES_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-primitives.json');
 const V30_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-v30.json');
 const SWAGGER_V20_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/swagger-v20.json');
+const HYPHENATED_FIXTURE_PATH = path.resolve(__dirname, '__fixtures__/petstore-hyphenated.json');
 
 describe('generate', () => {
   let outputDir: string;
@@ -885,6 +886,141 @@ describe('generate version validation', () => {
     await expect(generate(SWAGGER_V20_FIXTURE_PATH, outputDir)).rejects.toThrow(
       'Unsupported OpenAPI version "2.0"',
     );
+  });
+});
+
+describe('generate with hyphenated controller names', () => {
+  let outputDir: string;
+
+  beforeEach(() => {
+    outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nestjs-graphql-hyphen-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  it('should create kebab-case folder names for multi-word controllers', async () => {
+    await generate(HYPHENATED_FIXTURE_PATH, outputDir);
+
+    expect(fs.existsSync(path.join(outputDir, 'stake-pools'))).toBe(true);
+    expect(fs.existsSync(path.join(outputDir, 'byron-wallets'))).toBe(true);
+  });
+
+  it('should create kebab-case filenames without spaces', async () => {
+    await generate(HYPHENATED_FIXTURE_PATH, outputDir);
+
+    const stakePoolsDir = path.join(outputDir, 'stake-pools');
+    const expectedFiles = [
+      'stake-pools.module.ts',
+      'stake-pools.resolver.ts',
+      'stake-pools.service.ts',
+      'stake-pools.models.ts',
+      'stake-pools.dto.ts',
+    ];
+
+    for (const file of expectedFiles) {
+      expect(fs.existsSync(path.join(stakePoolsDir, file))).toBe(true);
+    }
+  });
+
+  it('should not create filenames with spaces', async () => {
+    await generate(HYPHENATED_FIXTURE_PATH, outputDir);
+
+    const stakePoolsDir = path.join(outputDir, 'stake-pools');
+    const files = fs.readdirSync(stakePoolsDir);
+
+    for (const file of files) {
+      expect(file).not.toContain(' ');
+    }
+  });
+
+  it('should use kebab-case import paths in module file', async () => {
+    await generate(HYPHENATED_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'stake-pools', 'stake-pools.module.ts'),
+      'utf-8',
+    );
+    expect(content).toContain("from './stake-pools.resolver'");
+    expect(content).toContain("from './stake-pools.service'");
+    expect(content).not.toContain("from './stake pools.");
+  });
+
+  it('should use kebab-case import paths in resolver file', async () => {
+    await generate(HYPHENATED_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'stake-pools', 'stake-pools.resolver.ts'),
+      'utf-8',
+    );
+    expect(content).toContain("from './stake-pools.service'");
+    expect(content).toContain("from './stake-pools.models'");
+    expect(content).toContain("from './stake-pools.dto'");
+    expect(content).not.toContain("from './stake pools.");
+  });
+
+  it('should use kebab-case import paths in service file', async () => {
+    await generate(HYPHENATED_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'stake-pools', 'stake-pools.service.ts'),
+      'utf-8',
+    );
+    expect(content).toContain("from './stake-pools.dto'");
+    expect(content).not.toContain("from './stake pools.");
+  });
+
+  it('should generate class names without hyphens in models', async () => {
+    await generate(HYPHENATED_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'stake-pools', 'stake-pools.models.ts'),
+      'utf-8',
+    );
+    const classNames = [...content.matchAll(/class (\S+)/g)].map((m) => m[1]);
+    for (const name of classNames) {
+      expect(name).not.toContain('-');
+    }
+    expect(content).toContain('GetStakePoolsResponse');
+    expect(content).toContain('GetStakePoolsMaintenanceActionsResponse');
+  });
+
+  it('should generate class names without hyphens in DTOs', async () => {
+    await generate(HYPHENATED_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'stake-pools', 'stake-pools.dto.ts'),
+      'utf-8',
+    );
+    const classNames = [...content.matchAll(/class (\S+)/g)].map((m) => m[1]);
+    for (const name of classNames) {
+      expect(name).not.toContain('-');
+    }
+    expect(content).toContain('PostStakePoolsInput');
+  });
+
+  it('should generate valid PascalCase class names for byron-wallets controller', async () => {
+    await generate(HYPHENATED_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'byron-wallets', 'byron-wallets.models.ts'),
+      'utf-8',
+    );
+    expect(content).toContain('GetByronWalletsResponse');
+    expect(content).not.toContain('GetByron-wallets');
+  });
+
+  it('should generate PascalCase service and resolver class names', async () => {
+    await generate(HYPHENATED_FIXTURE_PATH, outputDir);
+
+    const moduleContent = fs.readFileSync(
+      path.join(outputDir, 'stake-pools', 'stake-pools.module.ts'),
+      'utf-8',
+    );
+    expect(moduleContent).toContain('StakePoolsModule');
+    expect(moduleContent).toContain('StakePoolsResolver');
+    expect(moduleContent).toContain('StakePoolsService');
   });
 });
 

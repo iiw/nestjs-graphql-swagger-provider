@@ -1,6 +1,34 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
 import { describe, expect, it } from 'vitest';
-import { extractSchema } from './schemas.js';
+import { extractSchema, schemaToName } from './schemas.js';
+
+describe('schemaToName', () => {
+  it('should produce valid PascalCase names from simple paths', () => {
+    expect(schemaToName('/pets', 'get', 'Response')).toBe('GetPetsResponse');
+  });
+
+  it('should produce valid PascalCase names from hyphenated path segments', () => {
+    expect(schemaToName('/stake-pools', 'get', 'Response')).toBe('GetStakePoolsResponse');
+  });
+
+  it('should produce valid PascalCase names from multiple hyphenated segments', () => {
+    expect(schemaToName('/stake-pools/maintenance-actions', 'get', 'Response')).toBe(
+      'GetStakePoolsMaintenanceActionsResponse',
+    );
+  });
+
+  it('should handle path params with hyphenated segments', () => {
+    expect(schemaToName('/byron-wallets/{walletId}', 'get', 'Response')).toBe(
+      'GetByronWalletsWalletIdResponse',
+    );
+  });
+
+  it('should not contain hyphens in the generated name', () => {
+    const name = schemaToName('/byron-wallets/{walletId}/addresses', 'post', 'Input');
+    expect(name).not.toContain('-');
+    expect(name).toBe('PostByronWalletsWalletIdAddressesInput');
+  });
+});
 
 describe('extractSchema primitive detection', () => {
   it('should detect string primitive type', () => {

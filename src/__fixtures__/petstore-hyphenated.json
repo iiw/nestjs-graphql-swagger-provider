@@ -1,0 +1,160 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Petstore Hyphenated",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://petstore.example.com/api/v1"
+    }
+  ],
+  "paths": {
+    "/stake-pools": {
+      "get": {
+        "tags": ["Stake Pools"],
+        "operationId": "listStakePools",
+        "summary": "List all stake pools",
+        "responses": {
+          "200": {
+            "description": "A list of stake pools",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["id", "name"],
+                    "properties": {
+                      "id": { "type": "string" },
+                      "name": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Stake Pools"],
+        "operationId": "createStakePool",
+        "summary": "Create a stake pool",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Stake pool created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["id", "name"],
+                  "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stake-pools/{poolId}": {
+      "get": {
+        "tags": ["Stake Pools"],
+        "operationId": "getStakePool",
+        "summary": "Get a stake pool by ID",
+        "parameters": [
+          {
+            "name": "poolId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A stake pool",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["id", "name"],
+                  "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/byron-wallets": {
+      "get": {
+        "tags": ["Byron Wallets"],
+        "operationId": "listByronWallets",
+        "summary": "List all Byron wallets",
+        "responses": {
+          "200": {
+            "description": "A list of Byron wallets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["id", "balance"],
+                    "properties": {
+                      "id": { "type": "string" },
+                      "balance": { "type": "number" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stake-pools/maintenance-actions": {
+      "get": {
+        "tags": ["Stake Pools"],
+        "operationId": "getMaintenanceActions",
+        "summary": "Get maintenance actions",
+        "responses": {
+          "200": {
+            "description": "Maintenance actions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["status"],
+                  "properties": {
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
