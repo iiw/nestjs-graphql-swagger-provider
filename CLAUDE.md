@@ -19,7 +19,7 @@ nestjs-graphql-swagger-provider — a CLI code generator that reads a Swagger/Op
 
 - **CLI package**: distributed via npm, invoked with `npx`. No runtime dependency for consumers — this is a code generator only.
 - **Source**: `src/` directory, CLI source in `src/cli/`. Prefer small, focused files — split by responsibility where possible.
-- **Tests**: colocated as `*.spec.ts` files next to source. Fixture-based: feed sample `swagger.json` files and verify generated output.
+- **Tests**: unit tests colocated as `*.spec.ts` next to source (`src/`); integration tests in `test/` directory with fixtures in `test/__fixtures__/`. Fixture-based: feed sample `swagger.json` files and verify generated output.
 - **TypeScript**: strict mode, decorators enabled (`experimentalDecorators` + `emitDecoratorMetadata`)
 
 ### Key dependencies (this CLI tool)
@@ -83,3 +83,13 @@ The generated code requires these packages in the consuming project:
 - **OpenAPI 3.0+** (supports 3.0.x and 3.1.x)
 - **Overwrite** on regeneration — no prompts, no skip logic
 - If error responses are declared in the OpenAPI spec, generate corresponding error handling in services; otherwise let exceptions propagate
+
+## Releasing a new version
+
+1. **Ensure tests pass**: `npm test`
+2. **Bump version** in `package.json` (e.g. `"version": "0.0.7"`)
+3. **Update `CHANGELOG.md`**: add a new `## X.Y.Z` section at the top (below `# Changelog`) describing bug fixes, features, and other changes since the last release
+4. **Commit**: `git commit -m "chore: release X.Y.Z"` with the version bump + changelog
+5. **Build**: `npm run build`
+6. **Publish**: `npm publish`
+7. **Tag** (optional): `git tag X.Y.Z && git push --tags` (not vX.Y.Z)

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.0.6
+
+### Bug Fixes
+
+- **Import paths**: Fixed generated module, resolver, and service files using space-separated import paths instead of kebab-case for multi-word controllers (e.g. `from './stake pools.service'` → `from './stake-pools.service'`).
+
+### Tests
+
+- Split monolithic `src/generate.spec.ts` (1200 lines) into 7 focused test files under `test/` by concern (basic, enums, schemas, DI, service, primitives, hyphenated).
+- Moved fixtures from `src/__fixtures__/` to `test/__fixtures__/`.
+- Added shared test helpers (`test/helpers.ts`).
+- Added real-world pricing API swagger spec tests.
+- Added sophisticated Cardano Wallet API smoke tests.
+
 ## 0.0.5
 
 ### Bug Fixes
