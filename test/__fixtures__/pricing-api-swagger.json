@@ -1,0 +1,1194 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Cotemar Precios Unitarios API",
+    "description": "ASP.NET Core Web API de Precios Unitarios de Cotemar",
+    "contact": {
+      "name": "Leonardo Prado Gutiérrez",
+      "email": "lpradog@cotemar.com.mx"
+    },
+    "version": "v1.1"
+  },
+  "paths": {
+    "/actualiza/pu/ayudantia": {
+      "post": {
+        "tags": [
+          "actualiza"
+        ],
+        "summary": "Actualiza el número de oficio y sus fechas de envío a Ayudantía",
+        "description": "Actualiza estatus de PUs enviados a Ayudantía",
+        "requestBody": {
+          "description": "Items PU",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Oficio"
+                },
+                "description": "Items PU",
+                "nullable": true
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Oficio"
+                },
+                "description": "Items PU",
+                "nullable": true
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Oficio"
+                },
+                "description": "Items PU",
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok"
+          },
+          "404": {
+            "description": "Folio no encontrado"
+          }
+        }
+      }
+    },
+    "/actualiza/pu/dopa": {
+      "post": {
+        "tags": [
+          "actualiza"
+        ],
+        "summary": "Actualiza el número de oficio y sus fechas de envío a DOPA",
+        "description": "Actualiza estatus de PUs enviados a DOPA",
+        "requestBody": {
+          "description": "Items PU",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Oficio"
+                },
+                "description": "Items PU",
+                "nullable": true
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Oficio"
+                },
+                "description": "Items PU",
+                "nullable": true
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Oficio"
+                },
+                "description": "Items PU",
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok"
+          },
+          "404": {
+            "description": "Folio no encontrado"
+          }
+        }
+      }
+    },
+    "/actualiza/pu/actualizaPartidaAnterior": {
+      "post": {
+        "tags": [
+          "actualiza"
+        ],
+        "summary": "Actualiza el campo partida anterior en una solicitud BPM",
+        "description": "Actualiza Partida Anterior de PUEs",
+        "requestBody": {
+          "description": "Item PU",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PUPartidaAnterior"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PUPartidaAnterior"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PUPartidaAnterior"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok"
+          },
+          "404": {
+            "description": "Folio no encontrado"
+          }
+        }
+      }
+    },
+    "/actualiza/pu/Operaciones": {
+      "post": {
+        "tags": [
+          "actualiza"
+        ],
+        "summary": "Actualiza el campo Vobo de PUS",
+        "description": "Actualiza VoBo de PUS",
+        "requestBody": {
+          "description": "Items PU",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PUVoBo"
+                },
+                "description": "Items PU",
+                "nullable": true
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PUVoBo"
+                },
+                "description": "Items PU",
+                "nullable": true
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PUVoBo"
+                },
+                "description": "Items PU",
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok"
+          },
+          "404": {
+            "description": "Folio no encontrado"
+          }
+        }
+      }
+    },
+    "/actualiza/pu/Encarpetado": {
+      "post": {
+        "tags": [
+          "actualiza"
+        ],
+        "summary": "Actualiza el campo Observaciones de PU que han sido regresados",
+        "description": "Actualiza las observaciones de PU regresados",
+        "requestBody": {
+          "description": "Items PU",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PUVoBo"
+                },
+                "description": "Items PU",
+                "nullable": true
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PUVoBo"
+                },
+                "description": "Items PU",
+                "nullable": true
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PUVoBo"
+                },
+                "description": "Items PU",
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok"
+          },
+          "404": {
+            "description": "Folio no encontrado"
+          }
+        }
+      }
+    },
+    "/cancelar/pu/cancela": {
+      "post": {
+        "tags": [
+          "cancelar"
+        ],
+        "summary": "Cancela un PU mediante su solicitud",
+        "description": "Actualiza estatus de PUs a cancelado",
+        "requestBody": {
+          "description": "PUCancelacion",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PUCancelacion"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PUCancelacion"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PUCancelacion"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok"
+          },
+          "404": {
+            "description": "Solicitud no encontrada"
+          }
+        }
+      }
+    },
+    "/consulta/pendientes/{folioLPE}": {
+      "get": {
+        "tags": [
+          "consulta"
+        ],
+        "summary": "Devuelve la lista de PUs de un oficio de LPE que no se han gestionado",
+        "description": "Obtiene las PUs que no han sido gestionadas en concilia",
+        "parameters": [
+          {
+            "name": "folioLPE",
+            "in": "path",
+            "description": "Folio LPE",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Folio LPE",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PUs no gestionados",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PU"
+                  },
+                  "description": ""
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PU"
+                  },
+                  "description": ""
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PU"
+                  },
+                  "description": ""
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Folio no encontrado"
+          }
+        }
+      }
+    },
+    "/consulta/pu/obtenerPUsAutorizadosEnGestion": {
+      "get": {
+        "tags": [
+          "consulta"
+        ],
+        "summary": "Obtiene PUS autorizados que aun se encuentran en gestión en BPM",
+        "description": "Obtener PUS autorizados en gestión",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PUAprobado"
+                  },
+                  "description": ""
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PUAprobado"
+                  },
+                  "description": ""
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PUAprobado"
+                  },
+                  "description": ""
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/consulta/PUInterfazSAP/{fechaCreacion}": {
+      "get": {
+        "tags": [
+          "consulta"
+        ],
+        "summary": "Precios Unitarios Extraordinarios para la interfaz SAP",
+        "description": "Obtiene las PUs para la interfaz SAP",
+        "parameters": [
+          {
+            "name": "fechaCreacion",
+            "in": "path",
+            "description": "Fecha de creación del PU en formato yyyy-MM-dd",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Fecha de creación del PU en formato yyyy-MM-dd",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Precio Unitario",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PUSAP"
+                  },
+                  "description": ""
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PUSAP"
+                  },
+                  "description": ""
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PUSAP"
+                  },
+                  "description": ""
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Precio Unitario no encontrado"
+          }
+        }
+      }
+    },
+    "/consulta/PUVoBo/ObtenerPUS": {
+      "get": {
+        "tags": [
+          "consulta"
+        ],
+        "summary": "Precios Unitarios para visto bueno",
+        "description": "Obtiene las PUs para VoBo",
+        "parameters": [
+          {
+            "name": "solicitud",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "contrato",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "anexo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "partida",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "obra",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "usuario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "cancelado",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Precio Unitario",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PUVoBo"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PUVoBo"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PUVoBo"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Precio Unitario no encontrado"
+          }
+        }
+      }
+    },
+    "/consulta/PUVoBo/ObtenerContratos": {
+      "get": {
+        "tags": [
+          "consulta"
+        ],
+        "summary": "Contratos Vigentes",
+        "description": "Obtiene los contratos vigentes",
+        "parameters": [
+          {
+            "name": "usuario",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contrato",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Contrato"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Contrato"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Contrato"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Contrato no encontrado"
+          }
+        }
+      }
+    },
+    "/consulta/PUVoBo/ObtenerObras": {
+      "get": {
+        "tags": [
+          "consulta"
+        ],
+        "summary": "Obras Vigentes",
+        "description": "Obtiene las obras vigentes",
+        "parameters": [
+          {
+            "name": "contrato",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Obras",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Obra"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Obra"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Obra"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Obras"
+          }
+        }
+      }
+    },
+    "/consulta/PUEncarpetado": {
+      "get": {
+        "tags": [
+          "consulta"
+        ],
+        "summary": "Precios Unitarios para encarpetador",
+        "description": "Obtiene las PUs para encarpetador",
+        "parameters": [
+          {
+            "name": "solicitud",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "contrato",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "anexo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "partida",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "obra",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Precio Unitario",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PUVoBo"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PUVoBo"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PUVoBo"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Precio Unitario no encontrado"
+          }
+        }
+      }
+    },
+    "/PrecioUnitario/{contrato}/{anexo}/{partida}": {
+      "get": {
+        "tags": [
+          "PrecioUnitario"
+        ],
+        "summary": "Devuelve el número de solicitud y su el número de su solicitud cancelada si tiene",
+        "description": "Obtiene las PUs que no han sido gestionadas en concilia",
+        "parameters": [
+          {
+            "name": "contrato",
+            "in": "path",
+            "description": "Contrato",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Contrato",
+              "nullable": true
+            }
+          },
+          {
+            "name": "anexo",
+            "in": "path",
+            "description": "Anexo",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Anexo",
+              "nullable": true
+            }
+          },
+          {
+            "name": "partida",
+            "in": "path",
+            "description": "Partida",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Partida",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Precio Unitario",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrecioUnitarioExtraordinario"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrecioUnitarioExtraordinario"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrecioUnitarioExtraordinario"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Precio Unitario no encontrado"
+          }
+        }
+      }
+    },
+    "/reingreso/pu/reingresoSolicitud": {
+      "post": {
+        "tags": [
+          "reingreso"
+        ],
+        "summary": "Cancela un Precio Unitario meiante su No de solicitud",
+        "description": "Actualiza estatus de PUs a reingreso",
+        "requestBody": {
+          "description": "PUReingreso",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PUReingreso"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PUReingreso"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PUReingreso"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ok"
+          },
+          "404": {
+            "description": "Solicitud no encontrada"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Oficio": {
+        "type": "object",
+        "properties": {
+          "solicitud": {
+            "type": "string",
+            "description": "No de solicitud",
+            "nullable": true
+          },
+          "_Oficio": {
+            "type": "string",
+            "description": "Numero de oficio",
+            "nullable": true
+          },
+          "fechaRecepcion": {
+            "type": "string",
+            "description": "Fecha de recepción en formato yyyy-MM-dd",
+            "nullable": true
+          },
+          "fechaSello": {
+            "type": "string",
+            "description": "Fecha de sello en formato yyyy-MM-dd",
+            "nullable": true
+          },
+          "usuario": {
+            "type": "string",
+            "description": "Usuario",
+            "nullable": true
+          }
+        },
+        "description": ""
+      },
+      "PUPartidaAnterior": {
+        "type": "object",
+        "properties": {
+          "solicitud": {
+            "type": "string",
+            "description": "BPD_INSTANCE_ID",
+            "nullable": true
+          },
+          "solicitudAnterior": {
+            "type": "string",
+            "description": "BPD_INSTANCE_ID anterior",
+            "nullable": true
+          }
+        }
+      },
+      "PUVoBo": {
+        "type": "object",
+        "properties": {
+          "llave": {
+            "type": "string",
+            "description": "LLave",
+            "nullable": true
+          },
+          "solicitud": {
+            "type": "string",
+            "description": "Solicitud BPM",
+            "nullable": true
+          },
+          "contrato": {
+            "type": "string",
+            "description": "Contrato",
+            "nullable": true
+          },
+          "anexo": {
+            "type": "string",
+            "description": "Anexo",
+            "nullable": true
+          },
+          "partida": {
+            "type": "string",
+            "description": "Nombre de partida",
+            "nullable": true
+          },
+          "estatus": {
+            "type": "string",
+            "description": "Estatus",
+            "nullable": true
+          },
+          "unidad": {
+            "type": "string",
+            "description": "Unidad de medida",
+            "nullable": true
+          },
+          "descripcion": {
+            "type": "string",
+            "description": "Descripcion del PU",
+            "nullable": true
+          },
+          "obra": {
+            "type": "string",
+            "description": "Obra",
+            "nullable": true
+          },
+          "faltaOficioSC": {
+            "type": "boolean",
+            "description": "Falta Oficio SC"
+          },
+          "voBo": {
+            "type": "boolean",
+            "description": "VoBo"
+          },
+          "observaciones": {
+            "type": "string",
+            "description": "Observaciones",
+            "nullable": true
+          },
+          "docsOk": {
+            "type": "boolean",
+            "description": "DocsOk"
+          }
+        }
+      },
+      "PUCancelacion": {
+        "type": "object",
+        "properties": {
+          "solicitud": {
+            "type": "string",
+            "description": "BPD_INSTANCE_ID",
+            "nullable": true
+          },
+          "usuario": {
+            "type": "string",
+            "description": "USERNAME",
+            "nullable": true
+          },
+          "comentarios": {
+            "type": "string",
+            "description": "COMMENTS",
+            "nullable": true
+          }
+        }
+      },
+      "PU": {
+        "type": "object",
+        "properties": {
+          "llave": {
+            "type": "string",
+            "description": "Llave",
+            "nullable": true
+          },
+          "contrato": {
+            "type": "string",
+            "description": "Contrato",
+            "nullable": true
+          },
+          "anexo": {
+            "type": "string",
+            "description": "Anexo",
+            "nullable": true
+          },
+          "partida": {
+            "type": "string",
+            "description": "Nombre de partida",
+            "nullable": true
+          },
+          "solicitud": {
+            "type": "string",
+            "description": "Numero de Solicitud/Instance",
+            "nullable": true
+          },
+          "obra": {
+            "type": "string",
+            "description": "Obra",
+            "nullable": true
+          },
+          "descripcion": {
+            "type": "string",
+            "description": "Descripcion del PU",
+            "nullable": true
+          },
+          "unidad": {
+            "type": "string",
+            "description": "Unidad",
+            "nullable": true
+          },
+          "precioOriginalMXN": {
+            "type": "number",
+            "description": "Precio Original del PU MXN",
+            "format": "double",
+            "nullable": true
+          },
+          "precioOriginalUSD": {
+            "type": "number",
+            "description": "Precio Original del PU USD",
+            "format": "double",
+            "nullable": true
+          },
+          "precioGMCIMSancionadoMXN": {
+            "type": "number",
+            "description": "Precio Sancionado GMCIM del PU MXN",
+            "format": "double",
+            "nullable": true
+          },
+          "precioGMCIMSancionadoUSD": {
+            "type": "number",
+            "description": "Precio Sancionado GMCIM del PU USD",
+            "format": "double",
+            "nullable": true
+          },
+          "precioDOPASancionadoMXN": {
+            "type": "number",
+            "description": "Precio Sancionado DOPA del PU MXN",
+            "format": "double",
+            "nullable": true
+          },
+          "precioDOPASancionadoUSD": {
+            "type": "number",
+            "description": "Precio Sancionado DOPA del PU USD",
+            "format": "double",
+            "nullable": true
+          }
+        },
+        "description": ""
+      },
+      "PUAprobado": {
+        "type": "object",
+        "properties": {
+          "solicitud": {
+            "type": "string",
+            "description": "BPD_INSTANCE_ID",
+            "nullable": true
+          }
+        }
+      },
+      "PUSAP": {
+        "type": "object",
+        "properties": {
+          "solicitudBPM": {
+            "type": "string",
+            "description": "Solicitud BPM",
+            "nullable": true
+          },
+          "solicitudBPMReferencia": {
+            "type": "string",
+            "description": "Solicitud BPM Referencia",
+            "nullable": true
+          },
+          "contrato": {
+            "type": "string",
+            "description": "Contrato",
+            "nullable": true
+          },
+          "anexoPartida": {
+            "type": "string",
+            "description": "Anexo-Partida",
+            "nullable": true
+          },
+          "anexo": {
+            "type": "string",
+            "description": "Anexo",
+            "nullable": true
+          },
+          "partida": {
+            "type": "string",
+            "description": "Nombre de partida",
+            "nullable": true
+          },
+          "estatus": {
+            "type": "string",
+            "description": "Estatus",
+            "nullable": true
+          },
+          "unidad": {
+            "type": "string",
+            "description": "Unidad de medida",
+            "nullable": true
+          },
+          "embarcacion": {
+            "type": "string",
+            "description": "Embarcacion",
+            "nullable": true
+          }
+        }
+      },
+      "Contrato": {
+        "type": "object",
+        "properties": {
+          "contratoId": {
+            "type": "string",
+            "nullable": true
+          },
+          "nombre": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Obra": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "nullable": true
+          },
+          "nombre": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "PrecioUnitarioExtraordinario": {
+        "type": "object",
+        "properties": {
+          "solicitud": {
+            "type": "string",
+            "description": "No de solicitud",
+            "nullable": true
+          },
+          "noSolicitudCancelacion": {
+            "type": "string",
+            "description": "No de solicitud de Cancelación",
+            "nullable": true
+          }
+        }
+      },
+      "PUReingreso": {
+        "type": "object",
+        "properties": {
+          "solicitud": {
+            "type": "string",
+            "description": "BPD_INSTANCE_ID",
+            "nullable": true
+          },
+          "usuario": {
+            "type": "string",
+            "description": "USERNAME",
+            "nullable": true
+          },
+          "comentarios": {
+            "type": "string",
+            "description": "COMMENTS",
+            "nullable": true
+          }
+        }
+      }
+    }
+  }
+}
