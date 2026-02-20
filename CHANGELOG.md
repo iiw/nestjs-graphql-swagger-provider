@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.5
+
+### Bug Fixes
+
+- **Generated filenames**: Fixed filenames containing spaces instead of hyphens for multi-word controllers (e.g. `byron wallets.service.ts` → `byron-wallets.service.ts`).
+- **Generated class names**: Fixed invalid TypeScript identifiers caused by hyphens in generated class names (e.g. `GetByron-walletsResponse` → `GetByronWalletsResponse`). Path segments are now properly PascalCased.
+
 ## 0.0.4
 
 ### Bug Fixes
