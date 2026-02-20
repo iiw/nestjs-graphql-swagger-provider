@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.0.3
+
+### Bug Fixes
+
+- **Generic Api class**: Fixed TypeScript errors in generated code by using `Api<unknown>` instead of `Api` to match the generic class signature from `swagger-typescript-api`.
+
+### Improvements
+
+- **ESLint**: All generated files now include `/* eslint-disable */` on the first line to prevent lint errors in generated code.
+- **Formatting**: Added blank lines between fields in generated models and DTOs for better readability.
+
 ## 0.0.2
 
 ### Bug Fixes

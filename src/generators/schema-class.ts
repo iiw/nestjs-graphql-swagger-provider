@@ -62,6 +62,7 @@ function buildPropertyDeclaration(prop: ParsedProperty) {
     hasExclamationToken: prop.required && !prop.nullable,
     hasQuestionToken: !prop.required || prop.nullable,
     decorators,
+    leadingTrivia: undefined as string | undefined,
   };
 }
 
