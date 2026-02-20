@@ -7,9 +7,9 @@ function loadFixture(filePath: string): Record<string, unknown> {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
 
-const REFS_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-refs.json');
-const ENUM_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-enums.json');
-const ALLOF_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-allof.json');
+const REFS_FIXTURE_PATH = path.resolve(__dirname, '../../test/__fixtures__/petstore-refs.json');
+const ENUM_FIXTURE_PATH = path.resolve(__dirname, '../../test/__fixtures__/petstore-enums.json');
+const ALLOF_FIXTURE_PATH = path.resolve(__dirname, '../../test/__fixtures__/petstore-allof.json');
 
 describe('extractRefName', () => {
   it('should extract the last segment of a $ref path', () => {

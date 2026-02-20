@@ -7,10 +7,10 @@ function loadFixture(filePath: string): Record<string, unknown> {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
 
-const FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore.json');
-const ENUM_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-enums.json');
-const REFS_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-refs.json');
-const ALLOF_FIXTURE_PATH = path.resolve(__dirname, '../__fixtures__/petstore-allof.json');
+const FIXTURE_PATH = path.resolve(__dirname, '../../test/__fixtures__/petstore.json');
+const ENUM_FIXTURE_PATH = path.resolve(__dirname, '../../test/__fixtures__/petstore-enums.json');
+const REFS_FIXTURE_PATH = path.resolve(__dirname, '../../test/__fixtures__/petstore-refs.json');
+const ALLOF_FIXTURE_PATH = path.resolve(__dirname, '../../test/__fixtures__/petstore-allof.json');
 
 describe('parseSpec', () => {
   it('should parse the petstore fixture into controllers', async () => {
