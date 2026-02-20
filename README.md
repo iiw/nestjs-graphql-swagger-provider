@@ -63,6 +63,10 @@ npm test             # Run tests with Vitest
 npm run test:cov     # Tests with coverage
 ```
 
+## Author
+
+Viktor Buzanov
+
 ## License
 
-ISC
+MIT

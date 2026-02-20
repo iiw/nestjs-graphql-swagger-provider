@@ -28,8 +28,8 @@
     "swagger",
     "openapi"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Viktor Buzanov",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/iiw/nestjs-graphql-swagger-provider/issues"
   },
