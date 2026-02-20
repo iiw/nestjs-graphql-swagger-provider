@@ -65,7 +65,7 @@ export async function generate(input: string, output: string): Promise<void> {
     const controllerDir = path.join(outputDir, toKebabCase(controller.name));
     fs.mkdirSync(controllerDir, { recursive: true });
 
-    const baseName = controller.name.toLowerCase();
+    const baseName = toKebabCase(controller.name);
 
     console.log(`Generating module: ${controller.name}...`);
 

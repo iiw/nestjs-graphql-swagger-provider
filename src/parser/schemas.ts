@@ -2,6 +2,7 @@ import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ParsedSchema } from './types.js';
 import type { RefMap } from './ref-resolver.js';
 import { extractProperties } from './properties.js';
+import { toPascalCase } from '../utils.js';
 
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'integer', 'boolean']);
 
@@ -10,7 +11,7 @@ export function schemaToName(path: string, method: string, suffix: string): stri
     .split('/')
     .filter(Boolean)
     .map((p) => p.replace(/[{}]/g, ''));
-  const base = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join('');
+  const base = parts.map((p) => toPascalCase(p)).join('');
   const methodCap = method.charAt(0).toUpperCase() + method.slice(1);
   return `${methodCap}${base}${suffix}`;
 }
