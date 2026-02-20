@@ -36,10 +36,10 @@ npx nestjs-graphql-swagger-provider generate \
 
 ### Generated Code Dependencies
 
-Your consuming project needs:
+Your NestJS project needs these additional packages:
 
 ```bash
-npm install @nestjs/common @nestjs/core @nestjs/graphql axios reflect-metadata rxjs
+npm install @nestjs/graphql axios
 ```
 
 ## Swagger-to-GraphQL Mapping
