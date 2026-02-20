@@ -247,4 +247,32 @@ describe('generate with sophisticated real-world spec', () => {
       ).toBe(true);
     }
   });
+
+  it('all types referenced in service files should have corresponding imports', async () => {
+    await generate(SOPHISTICATED_FIXTURE_PATH, outputDir);
+
+    const allFiles = getAllTsFiles(outputDir).filter((f) => f.endsWith('.service.ts'));
+
+    for (const filePath of allFiles) {
+      const content = fs.readFileSync(filePath, 'utf-8');
+
+      // Find all enum-like types used as method parameter types (PascalCase identifiers
+      // that are not built-in types like Promise, Record, Api, etc.)
+      const builtins = new Set(['Promise', 'Record', 'Api', 'HttpException', 'string', 'number', 'boolean', 'any', 'unknown', 'void', 'null', 'undefined']);
+      const paramTypes = [...content.matchAll(/\w+:\s*([A-Z][A-Za-z0-9_]+)/g)]
+        .map((m) => m[1])
+        .filter((t) => !builtins.has(t));
+
+      // Extract all imported identifiers
+      const importedNames = [...content.matchAll(/import\s+\{([^}]+)\}/g)]
+        .flatMap((m) => m[1].split(',').map((s) => s.trim()));
+
+      for (const typeName of paramTypes) {
+        expect(
+          importedNames,
+          `Type "${typeName}" used in ${path.basename(filePath)} but not imported`,
+        ).toContain(typeName);
+      }
+    }
+  });
 });

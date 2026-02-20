@@ -92,4 +92,17 @@ describe('generate with enums', () => {
     expect(content).toContain("from '../enums'");
     expect(content).toContain('PetStatus');
   });
+
+  it('should import enums in service when method parameters use enum types', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+    // listPets has a 'status' param typed as PetStatus enum
+    expect(content).toContain('status: PetStatus');
+    expect(content).toContain("from '../enums'");
+    expect(content).toContain('PetStatus');
+  });
 });
