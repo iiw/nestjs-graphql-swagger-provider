@@ -56,6 +56,10 @@ export interface ParsedEndpoint {
   requestBody?: ParsedSchema;
   responseSchema?: ParsedSchema;
   errorResponses: ParsedErrorResponse[];
+  /** Actual method name from swagger-typescript-api generated client */
+  apiClientMethodName?: string;
+  /** Actual namespace/module name from swagger-typescript-api generated client */
+  apiClientNamespace?: string;
 }
 
 export interface ParsedController {

@@ -8,8 +8,10 @@ function buildApiMethodCall(
   controller: ParsedController,
   endpoint: ParsedEndpoint,
 ): string {
-  const namespace = toCamelCase(controller.name);
-  const methodName = toCamelCase(endpoint.operationId);
+  const namespace = endpoint.apiClientNamespace
+    ? toCamelCase(endpoint.apiClientNamespace)
+    : toCamelCase(controller.name);
+  const methodName = endpoint.apiClientMethodName ?? toCamelCase(endpoint.operationId);
   const args: string[] = [];
 
   // 1. Path params (positional)

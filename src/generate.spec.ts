@@ -887,3 +887,70 @@ describe('generate version validation', () => {
     );
   });
 });
+
+describe('generate service-to-api-client consistency', () => {
+  let outputDir: string;
+
+  beforeEach(() => {
+    outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nestjs-graphql-consistency-test-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  });
+
+  it('should only call API client methods that actually exist in api-client.ts', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const apiClientContent = fs.readFileSync(
+      path.join(outputDir, 'api-client.ts'),
+      'utf-8',
+    );
+
+    for (const controller of ['pets', 'owners']) {
+      const servicePath = path.join(outputDir, controller, `${controller}.service.ts`);
+      if (!fs.existsSync(servicePath)) continue;
+
+      const serviceContent = fs.readFileSync(servicePath, 'utf-8');
+
+      // Extract all this.apiClient.<namespace>.<method>( calls
+      const methodCalls = [...serviceContent.matchAll(/this\.apiClient\.(\w+)\.(\w+)\(/g)];
+      expect(methodCalls.length).toBeGreaterThan(0);
+
+      for (const match of methodCalls) {
+        const [fullMatch, , methodName] = match;
+        // The method should exist as a property in the Api class (e.g., "listPets:")
+        expect(
+          apiClientContent,
+          `Service calls ${fullMatch} but "${methodName}" not found in api-client.ts`,
+        ).toMatch(new RegExp(`\\b${methodName}\\b`));
+      }
+    }
+  });
+
+  it('should use correct namespace matching the api-client class structure', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const apiClientContent = fs.readFileSync(
+      path.join(outputDir, 'api-client.ts'),
+      'utf-8',
+    );
+
+    const serviceContent = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+
+    // Extract namespaces used in service calls
+    const namespaceCalls = [...serviceContent.matchAll(/this\.apiClient\.(\w+)\.\w+\(/g)];
+    const namespaces = [...new Set(namespaceCalls.map((m) => m[1]))];
+
+    for (const ns of namespaces) {
+      // The namespace should appear as a property in the Api class (e.g., "pets = {")
+      expect(
+        apiClientContent,
+        `Service uses namespace "${ns}" but it doesn't exist in api-client.ts`,
+      ).toMatch(new RegExp(`\\b${ns}\\b\\s*=\\s*\\{`));
+    }
+  });
+});
