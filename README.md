@@ -32,6 +32,14 @@ npx nestjs-graphql-swagger-provider generate \
   --output ./src/generated
 ```
 
+### Options
+
+| Flag | Description |
+|---|---|
+| `--input <path-or-url>` | **(required)** Path or URL to the OpenAPI spec |
+| `--output <dir>` | **(required)** Output directory for generated files |
+| `--overwrite` | Delete the output directory before generation |
+
 ### Requirements
 
 - Node.js >= 24
@@ -54,6 +62,8 @@ npm install @nestjs/graphql axios
 | Path & query params | `@Args()` parameters |
 | Response schemas | `@ObjectType()` models |
 | String & integer enums | TypeScript enums + `registerEnumType()` |
+| `description` fields | `description` option on decorators |
+| `deprecated: true` | `deprecationReason` on decorators |
 
 ## Development
 
@@ -65,9 +75,10 @@ npm test             # Run tests with Vitest
 npm run test:cov     # Tests with coverage
 ```
 
-## Author
+## Authors
 
-Viktor Buzanov
+- Viktor Buzanov
+- Claude Opus 4.6
 
 ## License
 
