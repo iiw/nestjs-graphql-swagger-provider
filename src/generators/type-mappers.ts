@@ -1,5 +1,11 @@
-export function graphqlTypeForProperty(prop: { type: string; enumName?: string }): string {
+export function graphqlTypeForProperty(prop: {
+  type: string;
+  enumName?: string;
+  typeName?: string;
+}): string {
   switch (prop.type) {
+    case 'object':
+      return prop.typeName ?? 'String';
     case 'enum':
       return prop.enumName ?? 'String';
     case 'number':
@@ -26,8 +32,14 @@ export function graphqlScalarForPrimitive(openApiType: string): string {
   }
 }
 
-export function tsTypeForProperty(prop: { type: string; enumName?: string }): string {
+export function tsTypeForProperty(prop: {
+  type: string;
+  enumName?: string;
+  typeName?: string;
+}): string {
   switch (prop.type) {
+    case 'object':
+      return prop.typeName ?? 'string';
     case 'enum':
       return prop.enumName ?? 'string';
     case 'number':

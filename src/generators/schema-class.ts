@@ -5,11 +5,52 @@ import type {
   ParsedProperty,
   ParsedSchema,
 } from '../parser/types.js';
+import { toPascalCase } from '../utils.js';
 import { collectEnumNamesFromProperties } from './enum-utils.js';
 import { graphqlTypeForProperty, tsTypeForProperty } from './type-mappers.js';
 
 function needsExplicitType(prop: ParsedProperty, gqlType: string): boolean {
-  return prop.isArray || gqlType === 'Float' || prop.type === 'enum';
+  return prop.isArray || gqlType === 'Float' || prop.type === 'enum' || prop.type === 'object';
+}
+
+function extractNestedSchemas(schemas: Map<string, ParsedSchema>): Set<string> {
+  const extracted = new Set<string>();
+
+  function processProperties(
+    parentName: string,
+    properties: ParsedProperty[],
+  ): void {
+    for (const prop of properties) {
+      if (
+        prop.type === 'object' &&
+        prop.properties &&
+        prop.properties.length > 0 &&
+        !prop.typeName
+      ) {
+        const derivedName = `${parentName}${toPascalCase(prop.name)}`;
+        prop.typeName = derivedName;
+
+        const newSchema: ParsedSchema = {
+          name: derivedName,
+          properties: prop.properties,
+        };
+        schemas.set(derivedName, newSchema);
+        extracted.add(derivedName);
+
+        // Recurse for deeper nesting
+        processProperties(derivedName, prop.properties);
+      }
+    }
+  }
+
+  // Snapshot keys to avoid iterating over newly added entries
+  const originalNames = [...schemas.keys()];
+  for (const name of originalNames) {
+    const schema = schemas.get(name)!;
+    processProperties(name, schema.properties);
+  }
+
+  return extracted;
 }
 
 function escapeStringLiteral(str: string): string {
@@ -94,6 +135,9 @@ export function generateSchemaClasses(
     }
   }
 
+  // Extract inline nested objects into separate schemas
+  const extractedNames = extractNestedSchemas(schemas);
+
   if (schemas.size === 0) return;
 
   sourceFile.addImportDeclaration({
@@ -116,11 +160,12 @@ export function generateSchemaClasses(
     });
   }
 
-  // Generate parent classes first, then children
-  const parents = [...schemas.entries()].filter(([, s]) => !s.extends);
+  // Generate extracted nested schemas first, then parents, then children
+  const extracted = [...schemas.entries()].filter(([n]) => extractedNames.has(n));
+  const parents = [...schemas.entries()].filter(([n, s]) => !s.extends && !extractedNames.has(n));
   const children = [...schemas.entries()].filter(([, s]) => s.extends);
 
-  for (const [name, schema] of [...parents, ...children]) {
+  for (const [name, schema] of [...extracted, ...parents, ...children]) {
     const parentSchema = schema.extends ? schemas.get(schema.extends) : undefined;
     const parentPropNames = new Set(parentSchema?.properties.map((p) => p.name) ?? []);
     const filteredProperties = schema.properties.filter((p) => {
