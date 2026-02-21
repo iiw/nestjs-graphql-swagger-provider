@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.11
+
+### Features
+
+- **Context-aware enum matching**: Enums parsed from parameters, response models, and request bodies now carry context and operationId metadata. The enum matcher uses a two-pass strategy (name-based first, then value-based with params-interface preference) to correctly map duplicate enums with the same values but different contexts to distinct api-client enums.
+
 ## 0.0.10
 
 ### Features
