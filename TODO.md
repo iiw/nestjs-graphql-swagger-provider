@@ -13,10 +13,6 @@ Two issues caused argument count mismatches between generated services and the A
 
 Fixed in `src/generators/service.ts` and `src/parser/request-body.ts`.
 
-### Invalid characters in generated class names
+### ~~Invalid characters in generated class names~~ (fixed in 0.0.7)
 
-The generator produces class names containing `*` for DELETE endpoints with path params (e.g. `DeleteStakePools*WalletsWalletIdInput`). This creates invalid TypeScript identifiers.
-
-**Reproduction**: generate from `sophisticated-swagger.json` — `stake-pools.dto.ts` contains `DeleteStakePools*WalletsWalletIdInput`.
-
-**Failing test**: `test/generate-hyphenated.spec.ts` ("all types referenced in service files should have corresponding imports" — fails because the regex stops at `*`).
+`schemaToName()` only stripped `{}` from path segments, so literal wildcards like `*` in paths (e.g. `/stake-pools/*/wallets/{walletId}`) leaked into class names (`DeleteStakePools*WalletsWalletIdInput`). Fixed by stripping all non-alphanumeric/hyphen/underscore characters in `src/parser/schemas.ts`.

@@ -10,7 +10,7 @@ export function schemaToName(path: string, method: string, suffix: string): stri
   const parts = path
     .split('/')
     .filter(Boolean)
-    .map((p) => p.replace(/[{}]/g, ''));
+    .map((p) => p.replace(/[^a-zA-Z0-9_-]/g, ''));
   const base = parts.map((p) => toPascalCase(p)).join('');
   const methodCap = method.charAt(0).toUpperCase() + method.slice(1);
   return `${methodCap}${base}${suffix}`;
