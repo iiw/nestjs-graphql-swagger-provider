@@ -1,6 +1,6 @@
 import type { SourceFile } from 'ts-morph';
 import type { ParsedController, ParsedEndpoint } from '../parser/types.js';
-import { collectDtoNames } from './collectors.js';
+import { collectDtoNames, collectParameterEnumNames } from './collectors.js';
 import { tsTypeForProperty } from './type-mappers.js';
 import { toCamelCase, toKebabCase, toPascalCase } from '../utils.js';
 
@@ -99,6 +99,15 @@ export function generateService(
     sourceFile.addImportDeclaration({
       moduleSpecifier: `./${toKebabCase(controller.name)}.dto`,
       namedImports: dtoNames,
+    });
+  }
+
+  // Import enum types used in parameters
+  const enumNames = collectParameterEnumNames(controller);
+  if (enumNames.size > 0) {
+    sourceFile.addImportDeclaration({
+      moduleSpecifier: '../enums',
+      namedImports: Array.from(enumNames).sort(),
     });
   }
 
