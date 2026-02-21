@@ -11,7 +11,7 @@
     "build:api": "npx nestjs-graphql-swagger-provider generate --overwrite --input https://gist.githubusercontent.com/iiw/01fad370e1c738d1f0185ef371aad3ee/raw/31769b9bf49b95756b11bcea0bd9426f1708672f/swagger.json --output ./src/generated-provider"
   },
   "devDependencies": {
-    "nestjs-graphql-swagger-provider": "^0.0.10"
+    "nestjs-graphql-swagger-provider": "^0.0.11"
   },
   "dependencies": {
     "@apollo/server": "^5.4.0",
