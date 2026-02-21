@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.10
+
+### Features
+
+- **Enum imports from api-client**: Enums are now imported from the generated `api-client.ts` instead of generating duplicate enum definitions, reducing code duplication and keeping a single source of truth.
+
 ## 0.0.9
 
 ### Features
