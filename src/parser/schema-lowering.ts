@@ -130,6 +130,7 @@ export function lowerPropertyNode(
 
   if (prop.readOnly) result.readOnly = true;
   if (prop.writeOnly) result.writeOnly = true;
+  if (prop.description) result.description = prop.description;
 
   lowerSchemaToProperty(prop.schema, result, registry, parentName, prop.name);
 

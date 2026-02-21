@@ -12,6 +12,14 @@ function isQuery(method: string): boolean {
   return method === 'get';
 }
 
+function escapeStringLiteral(str: string): string {
+  return str
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r');
+}
+
 function buildResolverMethodParams(endpoint: ParsedEndpoint): {
   name: string;
   type: string;
@@ -33,6 +41,9 @@ function buildResolverMethodParams(endpoint: ParsedEndpoint): {
     }
     if (!param.required) {
       argsOpts.push('nullable: true');
+    }
+    if (param.description) {
+      argsOpts.push(`description: '${escapeStringLiteral(param.description)}'`);
     }
 
     const argsArgs: string[] = [`'${param.name}'`];
@@ -134,10 +145,15 @@ export function generateResolver(
       returnTypeArg = '() => Boolean';
     }
 
+    const decoratorArgs: string[] = [returnTypeArg];
+    if (endpoint.summary) {
+      decoratorArgs.push(`{ description: '${escapeStringLiteral(endpoint.summary)}' }`);
+    }
+
     return {
       name: methodName,
       isAsync: true,
-      decorators: [{ name: decoratorName, arguments: [returnTypeArg] }],
+      decorators: [{ name: decoratorName, arguments: decoratorArgs }],
       parameters: params,
       returnType: 'Promise<any>',
       statements: `    return this.${serviceVarName}.${methodName}(${serviceCallArgs});`,

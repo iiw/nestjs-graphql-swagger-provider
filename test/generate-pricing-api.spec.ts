@@ -85,9 +85,9 @@ describe('generate with pricing API spec', () => {
       'utf-8',
     );
     // GET /PrecioUnitario/{contrato}/{anexo}/{partida} has 3 path params
-    expect(resolverContent).toContain("@Args('contrato')");
-    expect(resolverContent).toContain("@Args('anexo')");
-    expect(resolverContent).toContain("@Args('partida')");
+    expect(resolverContent).toContain("@Args('contrato'");
+    expect(resolverContent).toContain("@Args('anexo'");
+    expect(resolverContent).toContain("@Args('partida'");
   });
 
   it('should pass multiple path parameters to service and api client', async () => {

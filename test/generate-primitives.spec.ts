@@ -62,7 +62,7 @@ describe('generate with primitive responses', () => {
       path.join(outputDir, 'status', 'status.resolver.ts'),
       'utf-8',
     );
-    expect(content).toContain('@Mutation(() => Boolean)');
+    expect(content).toContain('@Mutation(() => Boolean');
   });
 
   it('should not generate models file for primitive-response endpoints', async () => {

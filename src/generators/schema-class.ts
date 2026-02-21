@@ -12,6 +12,14 @@ function needsExplicitType(prop: ParsedProperty, gqlType: string): boolean {
   return prop.isArray || gqlType === 'Float' || prop.type === 'enum';
 }
 
+function escapeStringLiteral(str: string): string {
+  return str
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r');
+}
+
 function addFieldDecorator(
   prop: ParsedProperty,
   decorators: { name: string; arguments: string[] }[],
@@ -21,6 +29,9 @@ function addFieldDecorator(
 
   if (prop.nullable) {
     options.push('nullable: true');
+  }
+  if (prop.description) {
+    options.push(`description: '${escapeStringLiteral(prop.description)}'`);
   }
 
   if (prop.isArray) {

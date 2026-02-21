@@ -359,6 +359,33 @@ describe('lowerPropertyNode — readOnly/writeOnly', () => {
   });
 });
 
+describe('lowerPropertyNode — description', () => {
+  it('should preserve description on lowered property', () => {
+    const propNode: PropertyNode = {
+      name: 'name',
+      schema: { kind: 'primitive', type: 'string' },
+      required: true,
+      nullable: false,
+      description: 'The pet name',
+    };
+
+    const result = lowerPropertyNode(propNode, makeRegistry(), 'Pet');
+    expect(result.description).toBe('The pet name');
+  });
+
+  it('should not set description when not present', () => {
+    const propNode: PropertyNode = {
+      name: 'name',
+      schema: { kind: 'primitive', type: 'string' },
+      required: true,
+      nullable: false,
+    };
+
+    const result = lowerPropertyNode(propNode, makeRegistry(), 'Pet');
+    expect(result.description).toBeUndefined();
+  });
+});
+
 describe('lowerPropertyNode — array of enums', () => {
   it('should lower array of enums correctly', () => {
     const propNode: PropertyNode = {

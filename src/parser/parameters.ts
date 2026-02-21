@@ -24,6 +24,7 @@ export function extractParameters(
         type: mapped.type,
         required: p.required === true,
         isArray: mapped.isArray,
+        ...(p.description ? { description: p.description } : {}),
       };
 
       const enumValues = schema ? extractEnumValues(schema, mapped.isArray) : undefined;

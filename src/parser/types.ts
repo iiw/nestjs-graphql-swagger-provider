@@ -96,6 +96,8 @@ export interface ParsedProperty {
   readOnly?: boolean;
   /** Whether this property is writeOnly (skip in ObjectType) */
   writeOnly?: boolean;
+  /** OpenAPI description for this property */
+  description?: string;
 }
 
 export interface ParsedSchema {
@@ -123,6 +125,8 @@ export interface ParsedParameter {
   isArray: boolean;
   enumName?: string;
   enumValues?: (string | number)[];
+  /** OpenAPI description for this parameter */
+  description?: string;
 }
 
 export interface ParsedErrorResponse {
