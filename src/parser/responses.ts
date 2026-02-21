@@ -1,25 +1,29 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ParsedErrorResponse, ParsedSchema } from './types.js';
-import type { RefMap } from './ref-resolver.js';
+import type { AnnotatedSchema } from './schema-resolver.js';
 import { extractSchema } from './schemas.js';
+
+const SUCCESS_CODES = ['200', '201', '202', '204'];
 
 export function extractResponseSchema(
   responses: OpenAPIV3_1.ResponsesObject | undefined,
   name: string,
-  refMap?: RefMap,
+  schemaRegistry?: Map<string, AnnotatedSchema>,
 ): ParsedSchema | undefined {
   if (!responses) return undefined;
 
-  const successResponse = (responses['200'] ?? responses['201']) as
-    | OpenAPIV3_1.ResponseObject
-    | undefined;
-  if (!successResponse) return undefined;
+  for (const code of SUCCESS_CODES) {
+    const successResponse = responses[code] as OpenAPIV3_1.ResponseObject | undefined;
+    if (!successResponse) continue;
 
-  const jsonContent = successResponse.content?.['application/json'];
-  if (!jsonContent?.schema) return undefined;
+    const jsonContent = successResponse.content?.['application/json'];
+    if (!jsonContent?.schema) continue;
 
-  const schema = jsonContent.schema as OpenAPIV3_1.SchemaObject;
-  return extractSchema(schema, name, refMap);
+    const schema = jsonContent.schema as OpenAPIV3_1.SchemaObject;
+    return extractSchema(schema, name, schemaRegistry);
+  }
+
+  return undefined;
 }
 
 export function extractErrorResponses(

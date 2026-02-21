@@ -109,9 +109,16 @@ export function generateSchemaClasses(
   for (const [name, schema] of [...parents, ...children]) {
     const parentSchema = schema.extends ? schemas.get(schema.extends) : undefined;
     const parentPropNames = new Set(parentSchema?.properties.map((p) => p.name) ?? []);
+    const filteredProperties = schema.properties.filter((p) => {
+      // Skip readOnly properties in InputType (inputs shouldn't include server-generated fields)
+      if (decoratorName === 'InputType' && p.readOnly) return false;
+      // Skip writeOnly properties in ObjectType (outputs shouldn't include write-only fields)
+      if (decoratorName === 'ObjectType' && p.writeOnly) return false;
+      return true;
+    });
     const ownProperties = parentSchema
-      ? schema.properties.filter((p) => !parentPropNames.has(p.name))
-      : schema.properties;
+      ? filteredProperties.filter((p) => !parentPropNames.has(p.name))
+      : filteredProperties;
 
     sourceFile.addClass({
       name,

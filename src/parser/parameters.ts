@@ -1,13 +1,13 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ParsedParameter } from './types.js';
-import type { RefMap } from './ref-resolver.js';
+import { getRefName } from './schema-resolver.js';
 import { extractEnumValues, mapOpenApiType } from './type-mapping.js';
 import { deriveEnumName } from './enums.js';
 
 export function extractParameters(
   params: (OpenAPIV3_1.ParameterObject | OpenAPIV3_1.ReferenceObject)[] | undefined,
   operationId: string,
-  refMap?: RefMap,
+  _schemaRegistry?: Map<string, unknown>,
 ): ParsedParameter[] {
   if (!params) return [];
 
@@ -31,10 +31,18 @@ export function extractParameters(
       if (mapped.type === 'enum' && enumValues) {
         parsedParam.enumValues = enumValues;
 
-        // Try $ref-based name first, fall back to derived name
-        const refName = refMap?.parameterSchemas.get(operationId)?.get(p.name);
+        // Try Symbol-annotated $ref name first, fall back to derived name
+        const refName = schema ? getRefName(schema) : undefined;
+        // For array params, check items for ref name
+        const itemsRefName =
+          schema?.type === 'array' && schema.items
+            ? getRefName(schema.items)
+            : undefined;
+
         if (refName) {
           parsedParam.enumName = refName;
+        } else if (itemsRefName) {
+          parsedParam.enumName = itemsRefName;
         } else {
           parsedParam.enumName = deriveEnumName(operationId, p.name);
         }

@@ -1,12 +1,12 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ParsedSchema } from './types.js';
-import type { RefMap } from './ref-resolver.js';
+import type { AnnotatedSchema } from './schema-resolver.js';
 import { extractSchema } from './schemas.js';
 
 export function extractRequestBody(
   requestBody: OpenAPIV3_1.RequestBodyObject | OpenAPIV3_1.ReferenceObject | undefined,
   name: string,
-  refMap?: RefMap,
+  schemaRegistry?: Map<string, AnnotatedSchema>,
 ): ParsedSchema | undefined {
   if (!requestBody || '$ref' in requestBody) return undefined;
 
@@ -20,5 +20,5 @@ export function extractRequestBody(
   if (!mediaType?.schema) return undefined;
 
   const schema = mediaType.schema as OpenAPIV3_1.SchemaObject;
-  return extractSchema(schema, name, refMap);
+  return extractSchema(schema, name, schemaRegistry);
 }

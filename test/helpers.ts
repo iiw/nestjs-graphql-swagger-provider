@@ -15,6 +15,7 @@ export const HYPHENATED_FIXTURE_PATH = path.join(FIXTURES_DIR, 'petstore-hyphena
 export const SOPHISTICATED_FIXTURE_PATH = path.join(FIXTURES_DIR, 'sophisticated-swagger.json');
 export const PRICING_API_FIXTURE_PATH = path.join(FIXTURES_DIR, 'pricing-api-swagger.json');
 export const ONEOF_FIXTURE_PATH = path.join(FIXTURES_DIR, 'petstore-oneof.json');
+export const READONLY_FIXTURE_PATH = path.join(FIXTURES_DIR, 'petstore-readonly.json');
 
 export function createOutputDir(prefix = 'nestjs-graphql-test-'): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));

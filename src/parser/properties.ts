@@ -1,158 +1,110 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
-import type { ParsedProperty } from './types.js';
-import type { RefMap } from './ref-resolver.js';
-import { extractEnumValues, mapOpenApiType } from './type-mapping.js';
-import { deriveEnumName } from './enums.js';
+import type { ParsedProperty, SchemaNode } from './types.js';
+import type { AnnotatedSchema } from './schema-resolver.js';
+import { walkSchema } from './schema-walker.js';
+import { lowerPropertyNode, type LoweringRegistry } from './schema-lowering.js';
 
-/** Merge allOf entries into a single flat schema with combined properties and required. */
-export function flattenAllOf(
-  schema: OpenAPIV3_1.SchemaObject,
-  visited: WeakSet<object> = new WeakSet(),
-): OpenAPIV3_1.SchemaObject {
-  if (!schema.allOf || !Array.isArray(schema.allOf)) return schema;
-  if (visited.has(schema)) return schema;
-  visited.add(schema);
-
-  const mergedProperties: Record<string, OpenAPIV3_1.SchemaObject> = {};
-  const mergedRequired: string[] = [];
-
-  for (const entry of schema.allOf as OpenAPIV3_1.SchemaObject[]) {
-    let resolved = entry;
-
-    // Recurse for nested allOf
-    if (resolved.allOf) {
-      resolved = flattenAllOf(resolved, visited);
-    }
-    // Recurse for nested oneOf/anyOf
-    if (resolved.oneOf || resolved.anyOf) {
-      resolved = flattenOneOf(resolved, visited);
-    }
-
-    if (resolved.properties) {
-      Object.assign(mergedProperties, resolved.properties);
-    }
-    if (resolved.required) {
-      mergedRequired.push(...resolved.required);
-    }
-  }
-
-  return {
-    ...schema,
-    type: 'object',
-    properties: mergedProperties,
-    required: mergedRequired.length > 0 ? mergedRequired : undefined,
-  };
-}
-
-/** Merge oneOf/anyOf variants into a single flat schema. A property is required only if required in every variant. */
-export function flattenOneOf(
-  schema: OpenAPIV3_1.SchemaObject,
-  visited: WeakSet<object> = new WeakSet(),
-): OpenAPIV3_1.SchemaObject {
-  const variants = (schema.oneOf ?? schema.anyOf) as OpenAPIV3_1.SchemaObject[] | undefined;
-  if (!variants || !Array.isArray(variants)) return schema;
-  if (visited.has(schema)) return schema;
-  visited.add(schema);
-
-  const mergedProperties: Record<string, OpenAPIV3_1.SchemaObject> = {
-    ...(schema.properties as Record<string, OpenAPIV3_1.SchemaObject> | undefined),
-  };
-  const topLevelRequired = new Set(schema.required ?? []);
-
-  // Track which properties are required in every object variant
-  const variantRequiredSets: Set<string>[] = [];
-
-  for (const variant of variants) {
-    let resolved = variant;
-
-    if (resolved.allOf) {
-      resolved = flattenAllOf(resolved, visited);
-    }
-    if (resolved.oneOf || resolved.anyOf) {
-      resolved = flattenOneOf(resolved, visited);
-    }
-
-    // Skip variants with no properties (primitive-only)
-    if (!resolved.properties) continue;
-
-    Object.assign(mergedProperties, resolved.properties);
-    variantRequiredSets.push(new Set(resolved.required ?? []));
-  }
-
-  // A variant-only property is required only if it's required in every object variant
-  const variantRequired: string[] = [];
-  if (variantRequiredSets.length > 0) {
-    for (const propName of Object.keys(mergedProperties)) {
-      if (topLevelRequired.has(propName)) continue; // handled separately
-      if (variantRequiredSets.every((s) => s.has(propName))) {
-        variantRequired.push(propName);
-      }
-    }
-  }
-
-  const allRequired = [...topLevelRequired, ...variantRequired];
-
-  return {
-    ...schema,
-    oneOf: undefined,
-    anyOf: undefined,
-    type: 'object',
-    properties: mergedProperties,
-    required: allRequired.length > 0 ? allRequired : undefined,
-  };
-}
-
+/**
+ * Extract properties from an OpenAPI schema, handling allOf/oneOf/anyOf
+ * composition via the SchemaNode walker + lowering pipeline.
+ *
+ * The `schemaRegistry` parameter replaces the old `RefMap` — it holds the
+ * annotated component schemas so the walker can resolve $ref names.
+ */
 export function extractProperties(
   schema: OpenAPIV3_1.SchemaObject,
   parentName?: string,
-  refMap?: RefMap,
+  schemaRegistry?: Map<string, AnnotatedSchema>,
 ): ParsedProperty[] {
-  const visited = new WeakSet<object>();
-  let resolved = schema;
-
-  if (resolved.allOf) {
-    resolved = flattenAllOf(resolved, visited);
-  }
-  if (resolved.oneOf || resolved.anyOf) {
-    resolved = flattenOneOf(resolved, visited);
-  }
-
-  if (!resolved.properties) return [];
-
-  const requiredSet = new Set(resolved.required ?? []);
-
-  return Object.entries(resolved.properties).map(([name, propSchema]) => {
-    const prop = propSchema as OpenAPIV3_1.SchemaObject;
-    const mapped = mapOpenApiType(prop);
-
-    const parsedProp: ParsedProperty = {
-      name,
-      type: mapped.type,
-      isArray: mapped.isArray,
-      required: requiredSet.has(name),
-      nullable:
-        (prop as unknown as Record<string, unknown>).nullable === true ||
-        (Array.isArray(prop.type) && (prop.type as string[]).includes('null')),
-    };
-
-    const enumValues = extractEnumValues(prop, mapped.isArray);
-
-    if (mapped.type === 'enum' && enumValues) {
-      parsedProp.enumValues = enumValues;
-
-      // Try $ref-based name first, fall back to derived name
-      const refName = refMap?.schemaProperties.get(parentName ?? '')?.get(name);
-      if (refName) {
-        parsedProp.enumName = refName;
-      } else if (parentName) {
-        parsedProp.enumName = deriveEnumName(parentName, name);
-      }
+  // Build a lowering registry from the annotated schema registry
+  const loweringSchemas = new Map<string, SchemaNode>();
+  if (schemaRegistry) {
+    for (const [name, annotated] of schemaRegistry) {
+      loweringSchemas.set(
+        name,
+        walkSchema(annotated, { visited: new WeakSet(), definingName: name }),
+      );
     }
+  }
+  const registry: LoweringRegistry = { schemas: loweringSchemas };
 
-    if (mapped.type === 'object' && prop.properties) {
-      parsedProp.properties = extractProperties(prop, parentName, refMap);
-    }
-
-    return parsedProp;
+  // Walk the schema into a SchemaNode
+  const node = walkSchema(schema, {
+    visited: new WeakSet(),
+    definingName: parentName,
   });
+
+  // Lower to flat properties
+  return lowerNodeToProperties(node, registry, parentName);
+}
+
+function lowerNodeToProperties(
+  node: SchemaNode,
+  registry: LoweringRegistry,
+  parentName?: string,
+): ParsedProperty[] {
+  switch (node.kind) {
+    case 'object':
+      return node.properties.map((p) => lowerPropertyNode(p, registry, parentName));
+
+    case 'intersection': {
+      // Merge all member properties (same as old flattenAllOf)
+      const allProps: ParsedProperty[] = [];
+      const seen = new Set<string>();
+      for (const member of node.members) {
+        const memberProps = lowerNodeToProperties(member, registry, parentName);
+        for (const prop of memberProps) {
+          if (!seen.has(prop.name)) {
+            seen.add(prop.name);
+            allProps.push(prop);
+          } else {
+            // Later members override earlier ones (matching old behavior)
+            const idx = allProps.findIndex((p) => p.name === prop.name);
+            if (idx !== -1) allProps[idx] = prop;
+          }
+        }
+      }
+      return allProps;
+    }
+
+    case 'union': {
+      // Merge variant properties, required only if required in all variants
+      const propMap = new Map<string, ParsedProperty>();
+      const requiredSets: Set<string>[] = [];
+
+      for (const member of node.members) {
+        const memberProps = lowerNodeToProperties(member, registry, parentName);
+        const requiredInVariant = new Set<string>();
+        for (const prop of memberProps) {
+          if (prop.required) requiredInVariant.add(prop.name);
+          propMap.set(prop.name, { ...prop });
+        }
+        if (memberProps.length > 0) {
+          requiredSets.push(requiredInVariant);
+        }
+      }
+
+      for (const prop of propMap.values()) {
+        if (requiredSets.length > 0) {
+          prop.required = requiredSets.every((s) => s.has(prop.name));
+        } else {
+          prop.required = false;
+        }
+      }
+
+      return Array.from(propMap.values());
+    }
+
+    case 'ref': {
+      // Resolve the ref and lower
+      const resolved = registry.schemas.get(node.refName);
+      if (resolved) {
+        return lowerNodeToProperties(resolved, registry, parentName);
+      }
+      return [];
+    }
+
+    default:
+      return [];
+  }
 }

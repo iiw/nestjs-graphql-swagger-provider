@@ -1,3 +1,77 @@
+// ─── SchemaNode IR ───────────────────────────────────────────────────
+
+export interface ObjectSchemaNode {
+  kind: 'object';
+  properties: PropertyNode[];
+  additionalProperties?: SchemaNode | boolean;
+}
+
+export interface PrimitiveSchemaNode {
+  kind: 'primitive';
+  type: 'string' | 'number' | 'integer' | 'boolean';
+}
+
+export interface ArraySchemaNode {
+  kind: 'array';
+  items: SchemaNode;
+}
+
+export interface EnumSchemaNode {
+  kind: 'enum';
+  values: (string | number)[];
+  enumType: 'string' | 'integer';
+  enumName?: string;
+}
+
+export interface RefSchemaNode {
+  kind: 'ref';
+  refName: string;
+}
+
+export interface DiscriminatorNode {
+  propertyName: string;
+  mapping?: Record<string, string>;
+}
+
+export interface UnionSchemaNode {
+  kind: 'union';
+  variant: 'oneOf' | 'anyOf';
+  members: SchemaNode[];
+  discriminator?: DiscriminatorNode;
+}
+
+export interface IntersectionSchemaNode {
+  kind: 'intersection';
+  members: SchemaNode[];
+}
+
+export interface MapSchemaNode {
+  kind: 'map';
+  valueSchema: SchemaNode;
+}
+
+export type SchemaNode =
+  | ObjectSchemaNode
+  | PrimitiveSchemaNode
+  | ArraySchemaNode
+  | EnumSchemaNode
+  | RefSchemaNode
+  | UnionSchemaNode
+  | IntersectionSchemaNode
+  | MapSchemaNode;
+
+export interface PropertyNode {
+  name: string;
+  schema: SchemaNode;
+  required: boolean;
+  nullable: boolean;
+  readOnly?: boolean;
+  writeOnly?: boolean;
+  description?: string;
+}
+
+// ─── Flat types (consumed by generators) ─────────────────────────────
+
 export interface ParsedEnum {
   name: string;
   values: (string | number)[];
@@ -18,6 +92,10 @@ export interface ParsedProperty {
   enumValues?: (string | number)[];
   /** Enum type name for referencing the generated TS enum */
   enumName?: string;
+  /** Whether this property is readOnly (skip in InputType) */
+  readOnly?: boolean;
+  /** Whether this property is writeOnly (skip in ObjectType) */
+  writeOnly?: boolean;
 }
 
 export interface ParsedSchema {
@@ -29,6 +107,12 @@ export interface ParsedSchema {
   primitiveType?: 'string' | 'number' | 'integer' | 'boolean';
   /** Whether the outer schema was type: array */
   isArray?: boolean;
+  /** SchemaNode IR tree (attached for forward-compat; generators don't consume this yet) */
+  schemaNode?: SchemaNode;
+  /** Union member type names when this schema is a oneOf/anyOf */
+  unionMembers?: string[];
+  /** Discriminator info when this schema is a discriminated union */
+  discriminator?: DiscriminatorNode;
 }
 
 export interface ParsedParameter {
@@ -71,4 +155,6 @@ export interface ParsedSpec {
   controllers: ParsedController[];
   schemas: ParsedSchema[];
   enums: ParsedEnum[];
+  /** Named schema registry from component schemas (SchemaNode IR) */
+  namedSchemas?: Map<string, { name: string; schema: SchemaNode }>;
 }

@@ -1,8 +1,10 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
 import type { ParsedSchema } from './types.js';
-import type { RefMap } from './ref-resolver.js';
+import type { AnnotatedSchema } from './schema-resolver.js';
 import { extractProperties } from './properties.js';
 import { toPascalCase } from '../utils.js';
+import { walkSchema } from './schema-walker.js';
+import { lowerSchemaToFlat, type LoweringRegistry } from './schema-lowering.js';
 
 const PRIMITIVE_TYPES = new Set(['string', 'number', 'integer', 'boolean']);
 
@@ -19,7 +21,7 @@ export function schemaToName(path: string, method: string, suffix: string): stri
 export function extractSchema(
   schema: OpenAPIV3_1.SchemaObject | undefined,
   name: string,
-  refMap?: RefMap,
+  schemaRegistry?: Map<string, AnnotatedSchema>,
 ): ParsedSchema | undefined {
   if (!schema) return undefined;
 
@@ -41,10 +43,12 @@ export function extractSchema(
       };
     }
     if (items) {
-      return {
+      const result: ParsedSchema = {
         name,
-        properties: extractProperties(items, name, refMap),
+        properties: extractProperties(items, name, schemaRegistry),
       };
+      applyCompositionMetadata(result, items, schemaRegistry);
+      return result;
     }
   }
 
@@ -62,22 +66,83 @@ export function extractSchema(
     };
   }
 
-  return {
+  const result: ParsedSchema = {
     name,
-    properties: extractProperties(schema, name, refMap),
+    properties: extractProperties(schema, name, schemaRegistry),
   };
+  applyCompositionMetadata(result, schema, schemaRegistry);
+  return result;
+}
+
+/**
+ * Use walker+lowering to compute `extends`, `unionMembers`, and `discriminator`
+ * from schema composition (allOf/oneOf/anyOf).
+ */
+function applyCompositionMetadata(
+  result: ParsedSchema,
+  schema: OpenAPIV3_1.SchemaObject,
+  schemaRegistry?: Map<string, AnnotatedSchema>,
+): void {
+  if (!schema.allOf && !schema.oneOf && !schema.anyOf) return;
+
+  const loweringSchemas = buildLoweringSchemas(schemaRegistry);
+  const registry: LoweringRegistry = { schemas: loweringSchemas };
+  const node = walkSchema(schema, { visited: new WeakSet(), definingName: result.name });
+  const flat = lowerSchemaToFlat(result.name, node, registry);
+
+  if (flat.extends) result.extends = flat.extends;
+  if (flat.unionMembers) result.unionMembers = flat.unionMembers;
+  if (flat.discriminator) result.discriminator = flat.discriminator;
+}
+
+function buildLoweringSchemas(
+  schemaRegistry?: Map<string, AnnotatedSchema>,
+): Map<string, import('./types.js').SchemaNode> {
+  const loweringSchemas = new Map<string, import('./types.js').SchemaNode>();
+  if (schemaRegistry) {
+    for (const [name, annotated] of schemaRegistry) {
+      loweringSchemas.set(
+        name,
+        walkSchema(annotated, { visited: new WeakSet(), definingName: name }),
+      );
+    }
+  }
+  return loweringSchemas;
 }
 
 export function extractGlobalSchemas(
   schemas: Record<string, OpenAPIV3_1.SchemaObject> | undefined,
-  refMap?: RefMap,
+  schemaRegistry?: Map<string, AnnotatedSchema>,
 ): ParsedSchema[] {
   if (!schemas) return [];
 
+  // Build a lowering registry for allOf inheritance resolution
+  const loweringSchemas = new Map<string, import('./types.js').SchemaNode>();
+  for (const [name, schema] of Object.entries(schemas)) {
+    loweringSchemas.set(
+      name,
+      walkSchema(schema, { visited: new WeakSet(), definingName: name }),
+    );
+  }
+  const registry: LoweringRegistry = { schemas: loweringSchemas };
+
   return Object.entries(schemas)
     .filter(([, schema]) => schema.type === 'object' || schema.properties || schema.allOf || schema.oneOf || schema.anyOf)
-    .map(([name, schema]) => ({
-      name,
-      properties: extractProperties(schema, name, refMap),
-    }));
+    .map(([name, schema]) => {
+      const node = walkSchema(schema, { visited: new WeakSet(), definingName: name });
+      const flat = lowerSchemaToFlat(name, node, registry);
+
+      // Also populate properties via the extractProperties path for full backward-compat
+      // (enum names, nested objects, etc.)
+      const properties = extractProperties(schema, name, schemaRegistry);
+
+      return {
+        name,
+        properties,
+        extends: flat.extends,
+        schemaNode: flat.schemaNode,
+        unionMembers: flat.unionMembers,
+        discriminator: flat.discriminator,
+      };
+    });
 }
