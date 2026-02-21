@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.0.9
+
+### Features
+
+- **OpenAPI descriptions**: Property descriptions, parameter descriptions, and operation summaries are now forwarded to `@Field()`, `@Args()`, `@Query()`, and `@Mutation()` decorators via the `description` option. Falls back to `operation.description` when `summary` is absent.
+- **Deprecation markers**: `deprecated: true` on OpenAPI schema properties, parameters, and operations now generates `deprecationReason: 'Deprecated'` on the corresponding GraphQL decorators.
+- **`--overwrite` CLI flag**: New optional flag that deletes the output directory before generation, ensuring a clean output.
+
+### Documentation
+
+- Documented intentionally out-of-scope features (default values, validation decorators, discriminator unions, file uploads, security schemes) with rationale in CLAUDE.md.
+- Added CLI options table and updated Swagger-to-GraphQL mapping table in README.
+
 ## 0.0.8
 
 ### Features
