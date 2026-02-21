@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.14
+
+### Features
+
+- **Inline nested object extraction**: Inline object properties (not `$ref`) now generate separate `@InputType()` / `@ObjectType()` classes instead of falling back to `string`. Nested objects are recursively extracted with names derived from parent + property name (e.g. `OrderShipping`, `OrderShippingGeo`). Works for both request body DTOs and response models, including arrays of inline objects.
+
 ## 0.0.13
 
 ### Bug Fixes
