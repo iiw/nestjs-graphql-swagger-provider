@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.12
+
+### Bug Fixes
+
+- **Params-interface enum substitution**: When a parameter has an inline enum, the generated resolver and service now use the correct api-client params-interface enum (e.g. `StateEnum1`) instead of incorrectly matching the response enum (e.g. `ListByronAddressesStateEnum`). A new `substituteParameterEnums` post-processing step looks up the correct enum from the params interface and ensures it is registered in `enums.ts`.
+- **paramsEnumMap population**: Fixed `extractApiClientEnums` to use `prop.getType().getText(prop)` instead of `prop.getType().getText()`, which returned fully-qualified import paths and prevented the params-interface enum map from ever being populated.
+
 ## 0.0.11
 
 ### Features
