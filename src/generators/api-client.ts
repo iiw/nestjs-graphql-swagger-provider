@@ -54,3 +54,32 @@ export async function generateApiClient(input: string, outputDir: string): Promi
 
   return routeMap;
 }
+
+/**
+ * Extract body parameter type names from the generated api-client source for the given method names.
+ * Returns a map of methodName → body type name (e.g. "createWallet" → "CreateWalletInput").
+ */
+export function extractApiClientBodyTypes(
+  apiClientContent: string,
+  methodNames: string[],
+): Map<string, string> {
+  const result = new Map<string, string>();
+
+  for (const methodName of methodNames) {
+    // Match the method signature: methodName: (params...) =>
+    const sigPattern = new RegExp(
+      `\\b${methodName}:\\s*\\(([\\s\\S]*?)\\)\\s*=>`,
+    );
+    const sigMatch = apiClientContent.match(sigPattern);
+    if (!sigMatch) continue;
+
+    // Look for `data: TypeName` in the captured parameters
+    const dataPattern = /\bdata:\s*([A-Za-z_]\w*)/;
+    const dataMatch = sigMatch[1].match(dataPattern);
+    if (dataMatch) {
+      result.set(methodName, dataMatch[1]);
+    }
+  }
+
+  return result;
+}

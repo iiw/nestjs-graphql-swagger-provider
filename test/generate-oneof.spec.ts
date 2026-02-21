@@ -74,6 +74,38 @@ describe('generate with oneOf request body', () => {
     expect(serviceContent).toContain("from './wallets.dto");
   });
 
+  it('should cast union request body input to api-client type in service', async () => {
+    await generate(ONEOF_FIXTURE_PATH, outputDir);
+
+    const serviceContent = fs.readFileSync(
+      path.join(outputDir, 'wallets', 'wallets.service.ts'),
+      'utf-8',
+    );
+
+    // The service should cast `input as CreateWalletInput` because the body is a union
+    expect(serviceContent).toMatch(/input as \w+/);
+  });
+
+  it('should import the api-client body type for union casts', async () => {
+    await generate(ONEOF_FIXTURE_PATH, outputDir);
+
+    const serviceContent = fs.readFileSync(
+      path.join(outputDir, 'wallets', 'wallets.service.ts'),
+      'utf-8',
+    );
+
+    // The api-client import should include the body type alongside Api
+    const apiClientImport = serviceContent.match(/from\s+'\.\.\/api-client'[^;]*;/)?.[0] ?? '';
+    expect(apiClientImport).toBeTruthy();
+    // Should import more than just Api
+    expect(serviceContent).toMatch(/import\s*\{[^}]*Api[^}]*\}\s*from\s+'\.\.\/api-client'/);
+    // The body type name should appear in the import
+    const importMatch = serviceContent.match(/import\s*\{([^}]*)\}\s*from\s+'\.\.\/api-client'/);
+    expect(importMatch).not.toBeNull();
+    const importedNames = importMatch![1].split(',').map((s) => s.trim());
+    expect(importedNames.length).toBeGreaterThan(1);
+  });
+
   it('should also generate global schemas for oneOf component schemas', async () => {
     await generate(ONEOF_FIXTURE_PATH, outputDir);
 

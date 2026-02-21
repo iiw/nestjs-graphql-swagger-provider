@@ -20,6 +20,16 @@ export function collectModelNames(controller: ParsedController): string[] {
   ];
 }
 
+export function collectApiClientBodyTypeNames(controller: ParsedController): string[] {
+  return [
+    ...new Set(
+      controller.endpoints
+        .filter((e) => e.apiClientBodyTypeName)
+        .map((e) => e.apiClientBodyTypeName!),
+    ),
+  ];
+}
+
 export function collectParameterEnumNames(controller: ParsedController): Set<string> {
   const enumNames = new Set<string>();
   for (const endpoint of controller.endpoints) {

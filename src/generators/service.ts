@@ -1,6 +1,6 @@
 import type { SourceFile } from 'ts-morph';
 import type { ParsedController, ParsedEndpoint } from '../parser/types.js';
-import { collectDtoNames, collectParameterEnumNames } from './collectors.js';
+import { collectApiClientBodyTypeNames, collectDtoNames, collectParameterEnumNames } from './collectors.js';
 import { tsTypeForProperty } from './type-mappers.js';
 import { toCamelCase, toKebabCase, toPascalCase } from '../utils.js';
 
@@ -22,9 +22,13 @@ function buildApiMethodCall(
   if (allParams.length > 0) {
     args.push(`{ ${allParams.map((p) => p.name).join(', ')} }`);
   }
-  // 2. Body (if request body exists)
+  // 2. Body (if request body exists — cast to api-client type for union bodies)
   if (endpoint.requestBody) {
-    args.push('input');
+    args.push(
+      endpoint.apiClientBodyTypeName
+        ? `input as ${endpoint.apiClientBodyTypeName}`
+        : 'input',
+    );
   }
   // 3. extraConfig (always last, maps to RequestParams)
   args.push('extraConfig');
@@ -87,9 +91,10 @@ export function generateService(
     namedImports: nestImports,
   });
 
+  const apiClientImports = ['Api', ...collectApiClientBodyTypeNames(controller)];
   sourceFile.addImportDeclaration({
     moduleSpecifier: '../api-client',
-    namedImports: ['Api'],
+    namedImports: apiClientImports,
   });
 
   // Import DTOs if any endpoint has a request body

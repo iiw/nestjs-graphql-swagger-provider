@@ -114,6 +114,17 @@ describe('generate service Api client calls', () => {
     expect(content).toContain('this.apiClient.pets.createPet(input, extraConfig)');
   });
 
+  it('should NOT cast non-union request bodies', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.service.ts'),
+      'utf-8',
+    );
+    // createPet has a non-union body — should use plain `input`, not `input as ...`
+    expect(content).not.toMatch(/input\s+as\s+/);
+  });
+
   it('should call this.apiClient.owners.listOwners for owners service', async () => {
     await generate(FIXTURE_PATH, outputDir);
 
