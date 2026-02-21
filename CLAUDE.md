@@ -98,10 +98,19 @@ These features have been evaluated and deliberately excluded:
 
 ## Releasing a new version
 
-1. **Ensure tests pass**: `npm test`
-2. **Bump version** in `package.json` (e.g. `"version": "0.0.7"`)
-3. **Update `CHANGELOG.md`**: add a new `## X.Y.Z` section at the top (below `# Changelog`) describing bug fixes, features, and other changes since the last release
-4. **Commit**: `git commit -m "chore: release X.Y.Z"` with the version bump + changelog
-5. **Build**: `npm run build`
-6. **Publish**: `npm publish`
-7. **Tag** (optional): `git tag X.Y.Z && git push --tags` (not vX.Y.Z)
+Use `publish.sh` — a non-interactive script designed to be run by Claude Code.
+
+### Prerequisites (do these before running the script)
+
+1. Get the new version number from the user
+2. Run `git log` since the last release tag to review what changed
+3. Edit `CHANGELOG.md`: add a `## X.Y.Z` section at the top (below `# Changelog`) describing features, bug fixes, and other changes
+4. Ensure no other uncommitted changes besides the `CHANGELOG.md` edit
+
+### Run the script
+
+```bash
+./publish.sh X.Y.Z
+```
+
+The script handles: run tests, bump `package.json` version, verify changelog, commit (`chore: release X.Y.Z`), build, `npm publish`, git tag (`X.Y.Z`, not `vX.Y.Z`), and push.
