@@ -2,14 +2,14 @@
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
 import { Api } from '../api-client';
 import { PostAddressesInput } from './addresses.dto';
-import { ListAddressesState } from '../enums';
+import { StateEnum } from '../enums';
 
 @Injectable()
 export class AddressesService {
   constructor(@Inject('API_CLIENT') private readonly apiClient: Api<unknown>, @Optional() @Inject('REQUEST_CONFIG_FACTORY') private readonly requestConfigFactory?: ((methodName: string, args: Record<string, unknown>) => Record<string, unknown> | undefined)) {
   }
 
-  async listAddresses(walletId: string, state: ListAddressesState): Promise<any> {
+  async listAddresses(walletId: string, state: StateEnum): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('listAddresses', { walletId, state }) ?? {};
         try {
           const response = await this.apiClient.wallets.listAddresses({ walletId, state }, extraConfig);

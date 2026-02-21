@@ -2,7 +2,7 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { AddressesService } from './addresses.service';
 import { PostAddressesInput } from './addresses.dto';
-import { ListAddressesState } from '../enums';
+import { StateEnum } from '../enums';
 import { GetWalletsWalletIdAddressesResponse, GetAddressesAddressIdResponse, PostAddressesResponse } from './addresses.models';
 
 @Resolver()
@@ -11,7 +11,7 @@ export class AddressesResolver {
   }
 
   @Query(() => GetWalletsWalletIdAddressesResponse, { description: 'List' })
-  async listAddresses(@Args('walletId') walletId: string, @Args('state', { type: () => ListAddressesState, nullable: true, description: 'An optional filter on the address state.' }) state?: ListAddressesState | null): Promise<any> {
+  async listAddresses(@Args('walletId') walletId: string, @Args('state', { type: () => StateEnum, nullable: true, description: 'An optional filter on the address state.' }) state?: StateEnum | null): Promise<any> {
         return this.addressesService.listAddresses(walletId, state);
   }
 
