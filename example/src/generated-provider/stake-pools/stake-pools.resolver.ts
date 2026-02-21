@@ -1,10 +1,8 @@
 /* eslint-disable */
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { StakePoolsService } from './stake-pools.service';
-import { PostStakePoolsMaintenanceActionsInput, DeleteStakePools*WalletsWalletIdInput, PutStakePoolsStakePoolIdWalletsWalletIdInput
+import { PostStakePoolsMaintenanceActionsInput, DeleteStakePoolsWalletsWalletIdInput, PutStakePoolsStakePoolIdWalletsWalletIdInput } from './stake-pools.dto';
 import { GetStakePoolsResponse, GetStakePoolsMaintenanceActionsResponse, GetWalletsWalletIdDelegationFeesResponse } from './stake-pools.models';
-
- } from './stake-pools.dto';
 
 @Resolver()
 export class StakePoolsResolver {
@@ -32,7 +30,7 @@ export class StakePoolsResolver {
   }
 
   @Mutation(() => Boolean)
-  async quitStakePool(@Args('walletId') walletId: string, @Args('input') input: DeleteStakePools*WalletsWalletIdInput): Promise<any> {
+  async quitStakePool(@Args('walletId') walletId: string, @Args('input') input: DeleteStakePoolsWalletsWalletIdInput): Promise<any> {
         return this.stakePoolsService.quitStakePool(walletId, input);
   }
 

@@ -11,7 +11,7 @@ export class ByronMigrationsService {
   async getByronWalletMigrationInfo(walletId: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('getByronWalletMigrationInfo', { walletId }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.getByronWalletMigrationInfo(walletId, extraConfig);
+          const response = await this.apiClient.byronWallets.getByronWalletMigrationInfo({ walletId }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 403) {
@@ -30,7 +30,7 @@ export class ByronMigrationsService {
   async migrateByronWallet(walletId: string, input: PostByronWalletsWalletIdMigrationsInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('migrateByronWallet', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.migrateByronWallet(walletId, input, extraConfig);
+          const response = await this.apiClient.byronWallets.migrateByronWallet({ walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 403) {

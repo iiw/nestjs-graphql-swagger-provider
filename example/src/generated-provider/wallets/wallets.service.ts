@@ -46,7 +46,7 @@ export class WalletsService {
   async getUTxOsStatistics(walletId: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('getUTxOsStatistics', { walletId }) ?? {};
         try {
-          const response = await this.apiClient.wallets.getUTxOsStatistics(walletId, extraConfig);
+          const response = await this.apiClient.wallets.getUTxOsStatistics({ walletId }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 404) {
@@ -62,7 +62,7 @@ export class WalletsService {
   async getWallet(walletId: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('getWallet', { walletId }) ?? {};
         try {
-          const response = await this.apiClient.wallets.getWallet(walletId, extraConfig);
+          const response = await this.apiClient.wallets.getWallet({ walletId }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -81,7 +81,7 @@ export class WalletsService {
   async putWallet(walletId: string, input: PutWalletsWalletIdInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('putWallet', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.putWallet(walletId, input, extraConfig);
+          const response = await this.apiClient.wallets.putWallet({ walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -103,7 +103,7 @@ export class WalletsService {
   async deleteWallet(walletId: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('deleteWallet', { walletId }) ?? {};
         try {
-          const response = await this.apiClient.wallets.deleteWallet(walletId, extraConfig);
+          const response = await this.apiClient.wallets.deleteWallet({ walletId }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -122,7 +122,7 @@ export class WalletsService {
   async putWalletPassphrase(walletId: string, input: PutWalletsWalletIdPassphraseInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('putWalletPassphrase', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.putWalletPassphrase(walletId, input, extraConfig);
+          const response = await this.apiClient.wallets.putWalletPassphrase({ walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

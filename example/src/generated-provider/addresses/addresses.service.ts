@@ -2,6 +2,7 @@
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
 import { Api } from '../api-client';
 import { PostAddressesInput } from './addresses.dto';
+import { ListAddressesState } from '../enums';
 
 @Injectable()
 export class AddressesService {
@@ -11,7 +12,7 @@ export class AddressesService {
   async listAddresses(walletId: string, state: ListAddressesState): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('listAddresses', { walletId, state }) ?? {};
         try {
-          const response = await this.apiClient.wallets.listAddresses(walletId, { state }, extraConfig);
+          const response = await this.apiClient.wallets.listAddresses({ walletId, state }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -30,7 +31,7 @@ export class AddressesService {
   async inspectAddress(addressId: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('inspectAddress', { addressId }) ?? {};
         try {
-          const response = await this.apiClient.addresses.inspectAddress(addressId, extraConfig);
+          const response = await this.apiClient.addresses.inspectAddress({ addressId }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

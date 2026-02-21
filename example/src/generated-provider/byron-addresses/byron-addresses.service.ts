@@ -2,6 +2,7 @@
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
 import { Api } from '../api-client';
 import { PostByronWalletsWalletIdAddressesInput, PutByronWalletsWalletIdAddressesInput } from './byron-addresses.dto';
+import { ListByronAddressesState } from '../enums';
 
 @Injectable()
 export class ByronAddressesService {
@@ -11,7 +12,7 @@ export class ByronAddressesService {
   async listByronAddresses(walletId: string, state: ListByronAddressesState): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('listByronAddresses', { walletId, state }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.listByronAddresses(walletId, { state }, extraConfig);
+          const response = await this.apiClient.byronWallets.listByronAddresses({ walletId, state }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -30,7 +31,7 @@ export class ByronAddressesService {
   async createAddress(walletId: string, input: PostByronWalletsWalletIdAddressesInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('createAddress', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.createAddress(walletId, input, extraConfig);
+          const response = await this.apiClient.byronWallets.createAddress({ walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -52,7 +53,7 @@ export class ByronAddressesService {
   async importAddresses(walletId: string, input: PutByronWalletsWalletIdAddressesInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('importAddresses', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.importAddresses(walletId, input, extraConfig);
+          const response = await this.apiClient.byronWallets.importAddresses({ walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -68,7 +69,7 @@ export class ByronAddressesService {
   async importAddress(walletId: string, addressId: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('importAddress', { walletId, addressId }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.importAddress(walletId, addressId, extraConfig);
+          const response = await this.apiClient.byronWallets.importAddress({ walletId, addressId }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

@@ -11,7 +11,7 @@ export class ByronCoinSelectionsService {
   async byronSelectCoins(walletId: string, input: PostByronWalletsWalletIdCoinSelectionsRandomInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('byronSelectCoins', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.byronSelectCoins(walletId, input, extraConfig);
+          const response = await this.apiClient.byronWallets.byronSelectCoins({ walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

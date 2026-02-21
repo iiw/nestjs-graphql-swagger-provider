@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
 import { Api } from '../api-client';
-import { PostStakePoolsMaintenanceActionsInput, DeleteStakePools*WalletsWalletIdInput, PutStakePoolsStakePoolIdWalletsWalletIdInput } from './stake-pools.dto';
+import { PostStakePoolsMaintenanceActionsInput, DeleteStakePoolsWalletsWalletIdInput, PutStakePoolsStakePoolIdWalletsWalletIdInput } from './stake-pools.dto';
 
 @Injectable()
 export class StakePoolsService {
@@ -43,7 +43,7 @@ export class StakePoolsService {
   async getDelegationFee(walletId: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('getDelegationFee', { walletId }) ?? {};
         try {
-          const response = await this.apiClient.wallets.getDelegationFee(walletId, extraConfig);
+          const response = await this.apiClient.wallets.getDelegationFee({ walletId }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 403) {
@@ -59,10 +59,10 @@ export class StakePoolsService {
         }
   }
 
-  async quitStakePool(walletId: string, input: DeleteStakePools*WalletsWalletIdInput): Promise<any> {
+  async quitStakePool(walletId: string, input: DeleteStakePoolsWalletsWalletIdInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('quitStakePool', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.stakePools.quitStakePool(walletId, input, extraConfig);
+          const response = await this.apiClient.stakePools.quitStakePool({ walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -87,7 +87,7 @@ export class StakePoolsService {
   async joinStakePool(stakePoolId: string, walletId: string, input: PutStakePoolsStakePoolIdWalletsWalletIdInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('joinStakePool', { stakePoolId, walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.stakePools.joinStakePool(stakePoolId, walletId, input, extraConfig);
+          const response = await this.apiClient.stakePools.joinStakePool({ stakePoolId, walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

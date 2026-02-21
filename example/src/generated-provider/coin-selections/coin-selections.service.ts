@@ -11,7 +11,7 @@ export class CoinSelectionsService {
   async selectCoins(walletId: string, input: PostWalletsWalletIdCoinSelectionsRandomInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('selectCoins', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.selectCoins(walletId, input, extraConfig);
+          const response = await this.apiClient.wallets.selectCoins({ walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

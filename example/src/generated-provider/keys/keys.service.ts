@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
 import { Api } from '../api-client';
+import { GetWalletKeyRole } from '../enums';
 
 @Injectable()
 export class KeysService {
@@ -10,7 +11,7 @@ export class KeysService {
   async getWalletKey(walletId: string, role: GetWalletKeyRole, index: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('getWalletKey', { walletId, role, index }) ?? {};
         try {
-          const response = await this.apiClient.wallets.getWalletKey(walletId, role, index, extraConfig);
+          const response = await this.apiClient.wallets.getWalletKey({ walletId, role, index }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

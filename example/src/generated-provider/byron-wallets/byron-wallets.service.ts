@@ -46,7 +46,7 @@ export class ByronWalletsService {
   async getByronUTxOsStatistics(walletId: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('getByronUTxOsStatistics', { walletId }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.getByronUTxOsStatistics(walletId, extraConfig);
+          const response = await this.apiClient.byronWallets.getByronUTxOsStatistics({ walletId }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 404) {
@@ -62,7 +62,7 @@ export class ByronWalletsService {
   async getByronWallet(walletId: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('getByronWallet', { walletId }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.getByronWallet(walletId, extraConfig);
+          const response = await this.apiClient.byronWallets.getByronWallet({ walletId }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 404) {
@@ -78,7 +78,7 @@ export class ByronWalletsService {
   async putByronWallet(walletId: string, input: PutByronWalletsWalletIdInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('putByronWallet', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.putByronWallet(walletId, input, extraConfig);
+          const response = await this.apiClient.byronWallets.putByronWallet({ walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -100,7 +100,7 @@ export class ByronWalletsService {
   async deleteByronWallet(walletId: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('deleteByronWallet', { walletId }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.deleteByronWallet(walletId, extraConfig);
+          const response = await this.apiClient.byronWallets.deleteByronWallet({ walletId }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -119,7 +119,7 @@ export class ByronWalletsService {
   async putByronWalletPassphrase(walletId: string, input: PutByronWalletsWalletIdPassphraseInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('putByronWalletPassphrase', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.putByronWalletPassphrase(walletId, input, extraConfig);
+          const response = await this.apiClient.byronWallets.putByronWalletPassphrase({ walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

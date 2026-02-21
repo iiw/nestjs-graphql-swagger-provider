@@ -1,16 +1,17 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
 import { Api } from '../api-client';
+import { PostProxyTransactionsInput } from './proxy.dto';
 
 @Injectable()
 export class ProxyService {
   constructor(@Inject('API_CLIENT') private readonly apiClient: Api<unknown>, @Optional() @Inject('REQUEST_CONFIG_FACTORY') private readonly requestConfigFactory?: ((methodName: string, args: Record<string, unknown>) => Record<string, unknown> | undefined)) {
   }
 
-  async postExternalTransaction(): Promise<any> {
-        const extraConfig = this.requestConfigFactory?.('postExternalTransaction', {}) ?? {};
+  async postExternalTransaction(input: PostProxyTransactionsInput): Promise<any> {
+        const extraConfig = this.requestConfigFactory?.('postExternalTransaction', { input }) ?? {};
         try {
-          const response = await this.apiClient.proxy.postExternalTransaction(extraConfig);
+          const response = await this.apiClient.proxy.postExternalTransaction(input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

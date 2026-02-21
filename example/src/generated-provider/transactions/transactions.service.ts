@@ -2,6 +2,7 @@
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
 import { Api } from '../api-client';
 import { PostWalletsWalletIdPaymentFeesInput, PostWalletsWalletIdTransactionsInput } from './transactions.dto';
+import { ListTransactionsOrder } from '../enums';
 
 @Injectable()
 export class TransactionsService {
@@ -11,7 +12,7 @@ export class TransactionsService {
   async postTransactionFee(walletId: string, input: PostWalletsWalletIdPaymentFeesInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('postTransactionFee', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.postTransactionFee(walletId, input, extraConfig);
+          const response = await this.apiClient.wallets.postTransactionFee({ walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -36,7 +37,7 @@ export class TransactionsService {
   async listTransactions(walletId: string, start: string, end: string, order: ListTransactionsOrder, minWithdrawal: number): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('listTransactions', { walletId, start, end, order, minWithdrawal }) ?? {};
         try {
-          const response = await this.apiClient.wallets.listTransactions(walletId, { start, end, order, minWithdrawal }, extraConfig);
+          const response = await this.apiClient.wallets.listTransactions({ walletId, start, end, order, minWithdrawal }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -55,7 +56,7 @@ export class TransactionsService {
   async postTransaction(walletId: string, input: PostWalletsWalletIdTransactionsInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('postTransaction', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.postTransaction(walletId, input, extraConfig);
+          const response = await this.apiClient.wallets.postTransaction({ walletId }, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -80,7 +81,7 @@ export class TransactionsService {
   async getTransaction(walletId: string, transactionId: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('getTransaction', { walletId, transactionId }) ?? {};
         try {
-          const response = await this.apiClient.wallets.getTransaction(walletId, transactionId, extraConfig);
+          const response = await this.apiClient.wallets.getTransaction({ walletId, transactionId }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 404) {
@@ -96,7 +97,7 @@ export class TransactionsService {
   async deleteTransaction(walletId: string, transactionId: string): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('deleteTransaction', { walletId, transactionId }) ?? {};
         try {
-          const response = await this.apiClient.wallets.deleteTransaction(walletId, transactionId, extraConfig);
+          const response = await this.apiClient.wallets.deleteTransaction({ walletId, transactionId }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 403) {

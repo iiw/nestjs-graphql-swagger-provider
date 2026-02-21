@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { ProxyService } from './proxy.service';
+import { PostProxyTransactionsInput } from './proxy.dto';
 
 @Resolver()
 export class ProxyResolver {
@@ -8,7 +9,7 @@ export class ProxyResolver {
   }
 
   @Mutation(() => Boolean)
-  async postExternalTransaction(): Promise<any> {
-        return this.proxyService.postExternalTransaction();
+  async postExternalTransaction(@Args('input') input: PostProxyTransactionsInput): Promise<any> {
+        return this.proxyService.postExternalTransaction(input);
   }
 }

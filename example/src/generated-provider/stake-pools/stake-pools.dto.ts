@@ -9,7 +9,7 @@ export class PostStakePoolsMaintenanceActionsInput {
 }
 
 @InputType()
-export class DeleteStakePools*WalletsWalletIdInput {
+export class DeleteStakePoolsWalletsWalletIdInput {
   @Field()
   passphrase!: string;
 }
