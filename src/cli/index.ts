@@ -15,9 +15,10 @@ program
   .description('Generate NestJS GraphQL modules and REST client from an OpenAPI spec')
   .requiredOption('--input <path-or-url>', 'Path or URL to the OpenAPI spec')
   .requiredOption('--output <dir>', 'Output directory for generated files')
-  .action(async (options: { input: string; output: string }) => {
+  .option('--overwrite', 'Delete output directory before generation')
+  .action(async (options: { input: string; output: string; overwrite?: boolean }) => {
     try {
-      await generate(options.input, options.output);
+      await generate(options.input, options.output, { overwrite: options.overwrite });
     } catch (error) {
       console.error('Generation failed:', error instanceof Error ? error.message : error);
       process.exit(1);

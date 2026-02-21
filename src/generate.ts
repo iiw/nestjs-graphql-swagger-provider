@@ -12,8 +12,16 @@ import { toKebabCase } from './utils.js';
 import { parseSpec } from './parser/parse-spec.js';
 import { loadSpec } from './parser/spec-loader.js';
 
-export async function generate(input: string, output: string): Promise<void> {
+export interface GenerateOptions {
+  overwrite?: boolean;
+}
+
+export async function generate(input: string, output: string, options?: GenerateOptions): Promise<void> {
   const outputDir = path.resolve(output);
+
+  if (options?.overwrite) {
+    fs.rmSync(outputDir, { recursive: true, force: true });
+  }
 
   fs.mkdirSync(outputDir, { recursive: true });
 
