@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.13
+
+### Bug Fixes
+
+- **Union request body casting**: Generated services now cast `input as <ApiClientType>` when the request body uses `oneOf`/`anyOf`, fixing TypeScript errors where the flat-merged DTO didn't satisfy the api-client's union type. The body type is also imported from `api-client.ts`.
+
 ## 0.0.12
 
 ### Bug Fixes
