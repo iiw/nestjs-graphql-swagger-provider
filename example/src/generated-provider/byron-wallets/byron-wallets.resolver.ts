@@ -9,37 +9,37 @@ export class ByronWalletsResolver {
   constructor(private readonly byronWalletsService: ByronWalletsService) {
   }
 
-  @Query(() => GetByronWalletsResponse)
+  @Query(() => GetByronWalletsResponse, { description: 'List' })
   async listByronWallets(): Promise<any> {
         return this.byronWalletsService.listByronWallets();
   }
 
-  @Mutation(() => PostByronWalletsResponse)
+  @Mutation(() => PostByronWalletsResponse, { description: 'Restore' })
   async postByronWallet(@Args('input') input: PostByronWalletsInput): Promise<any> {
         return this.byronWalletsService.postByronWallet(input);
   }
 
-  @Query(() => GetByronWalletsWalletIdStatisticsUtxosResponse)
+  @Query(() => GetByronWalletsWalletIdStatisticsUtxosResponse, { description: 'UTxO Statistics' })
   async getByronUTxOsStatistics(@Args('walletId') walletId: string): Promise<any> {
         return this.byronWalletsService.getByronUTxOsStatistics(walletId);
   }
 
-  @Query(() => GetByronWalletsWalletIdResponse)
+  @Query(() => GetByronWalletsWalletIdResponse, { description: 'Get' })
   async getByronWallet(@Args('walletId') walletId: string): Promise<any> {
         return this.byronWalletsService.getByronWallet(walletId);
   }
 
-  @Mutation(() => PutByronWalletsWalletIdResponse)
+  @Mutation(() => PutByronWalletsWalletIdResponse, { description: 'Update Metadata' })
   async putByronWallet(@Args('walletId') walletId: string, @Args('input') input: PutByronWalletsWalletIdInput): Promise<any> {
         return this.byronWalletsService.putByronWallet(walletId, input);
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Boolean, { description: 'Delete' })
   async deleteByronWallet(@Args('walletId') walletId: string): Promise<any> {
         return this.byronWalletsService.deleteByronWallet(walletId);
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Boolean, { description: 'Update Passphrase' })
   async putByronWalletPassphrase(@Args('walletId') walletId: string, @Args('input') input: PutByronWalletsWalletIdPassphraseInput): Promise<any> {
         return this.byronWalletsService.putByronWalletPassphrase(walletId, input);
   }

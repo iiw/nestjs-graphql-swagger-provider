@@ -8,7 +8,7 @@ export class KeysResolver {
   constructor(private readonly keysService: KeysService) {
   }
 
-  @Query(() => String)
+  @Query(() => String, { description: 'Get Public Key' })
   async getWalletKey(@Args('walletId') walletId: string, @Args('role', { type: () => GetWalletKeyRole, nullable: true }) role?: GetWalletKeyRole | null, @Args('index', { nullable: true }) index?: string | null): Promise<any> {
         return this.keysService.getWalletKey(walletId, role, index);
   }

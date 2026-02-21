@@ -9,12 +9,12 @@ export class MigrationsResolver {
   constructor(private readonly migrationsService: MigrationsService) {
   }
 
-  @Query(() => GetWalletsWalletIdMigrationsResponse)
+  @Query(() => GetWalletsWalletIdMigrationsResponse, { description: 'Calculate Cost' })
   async getShelleyWalletMigrationInfo(@Args('walletId') walletId: string): Promise<any> {
         return this.migrationsService.getShelleyWalletMigrationInfo(walletId);
   }
 
-  @Mutation(() => PostWalletsWalletIdMigrationsResponse)
+  @Mutation(() => PostWalletsWalletIdMigrationsResponse, { description: 'Migrate' })
   async migrateShelleyWallet(@Args('walletId') walletId: string, @Args('input') input: PostWalletsWalletIdMigrationsInput): Promise<any> {
         return this.migrationsService.migrateShelleyWallet(walletId, input);
   }

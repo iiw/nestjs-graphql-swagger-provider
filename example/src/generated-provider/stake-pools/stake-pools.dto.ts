@@ -10,12 +10,12 @@ export class PostStakePoolsMaintenanceActionsInput {
 
 @InputType()
 export class DeleteStakePoolsWalletsWalletIdInput {
-  @Field()
+  @Field({ description: 'The source Byron wallet\'s master passphrase.' })
   passphrase!: string;
 }
 
 @InputType()
 export class PutStakePoolsStakePoolIdWalletsWalletIdInput {
-  @Field()
+  @Field({ description: 'The source Byron wallet\'s master passphrase.' })
   passphrase!: string;
 }

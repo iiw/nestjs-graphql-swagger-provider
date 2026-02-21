@@ -9,7 +9,7 @@ export class CoinSelectionsResolver {
   constructor(private readonly coinSelectionsService: CoinSelectionsService) {
   }
 
-  @Mutation(() => PostWalletsWalletIdCoinSelectionsRandomResponse)
+  @Mutation(() => PostWalletsWalletIdCoinSelectionsRandomResponse, { description: 'Random' })
   async selectCoins(@Args('walletId') walletId: string, @Args('input') input: PostWalletsWalletIdCoinSelectionsRandomInput): Promise<any> {
         return this.coinSelectionsService.selectCoins(walletId, input);
   }

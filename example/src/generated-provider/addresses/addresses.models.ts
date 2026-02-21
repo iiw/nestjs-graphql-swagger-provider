@@ -19,7 +19,7 @@ export class GetAddressesAddressIdResponse {
   @Field(() => GetAddressesAddressIdResponseStakeReference)
   stake_reference!: GetAddressesAddressIdResponseStakeReference;
 
-  @Field(() => Float)
+  @Field(() => Float, { description: 'Can be null for \'Icarus\' and \'Byron\' styles.' })
   network_tag?: number;
 
   @Field()
@@ -34,9 +34,15 @@ export class GetAddressesAddressIdResponse {
   @Field()
   pointer?: string;
 
-  @Field()
+  @Field({ description: 'Only for \'Icarus\' and \'Byron\' styles.' })
   address_root?: string;
 
-  @Field()
+  @Field({ description: 'Only for \'Byron\' style.' })
   derivation_path?: string;
+}
+
+@ObjectType()
+export class PostAddressesResponse {
+  @Field({ description: 'A Shelley address representing either enterprise, reward account or delegating address' })
+  address!: string;
 }

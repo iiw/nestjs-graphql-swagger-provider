@@ -63,8 +63,13 @@ export enum PutWalletsWalletIdResponseStatus {
 }
 registerEnumType(PutWalletsWalletIdResponseStatus, { name: 'PutWalletsWalletIdResponseStatus' });
 
+export enum PostWalletsWalletIdPaymentFeesResponseUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(PostWalletsWalletIdPaymentFeesResponseUnit, { name: 'PostWalletsWalletIdPaymentFeesResponseUnit' });
+
 export enum PostWalletsWalletIdPaymentFeesInputUnit {
-  Second = 'second'
+  Lovelace = 'lovelace'
 }
 registerEnumType(PostWalletsWalletIdPaymentFeesInputUnit, { name: 'PostWalletsWalletIdPaymentFeesInputUnit' });
 
@@ -92,8 +97,26 @@ export enum ListTransactionsOrder {
 }
 registerEnumType(ListTransactionsOrder, { name: 'ListTransactionsOrder' });
 
+export enum PostWalletsWalletIdTransactionsResponseUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(PostWalletsWalletIdTransactionsResponseUnit, { name: 'PostWalletsWalletIdTransactionsResponseUnit' });
+
+export enum PostWalletsWalletIdTransactionsResponseDirection {
+  Outgoing = 'outgoing',
+  Incoming = 'incoming'
+}
+registerEnumType(PostWalletsWalletIdTransactionsResponseDirection, { name: 'PostWalletsWalletIdTransactionsResponseDirection' });
+
+export enum PostWalletsWalletIdTransactionsResponseStatus {
+  Pending = 'pending',
+  InLedger = 'in_ledger',
+  Expired = 'expired'
+}
+registerEnumType(PostWalletsWalletIdTransactionsResponseStatus, { name: 'PostWalletsWalletIdTransactionsResponseStatus' });
+
 export enum PostWalletsWalletIdTransactionsInputUnit {
-  Second = 'second'
+  Lovelace = 'lovelace'
 }
 registerEnumType(PostWalletsWalletIdTransactionsInputUnit, { name: 'PostWalletsWalletIdTransactionsInputUnit' });
 
@@ -176,6 +199,59 @@ export enum GetWalletsWalletIdDelegationFeesResponseUnit {
   Lovelace = 'lovelace'
 }
 registerEnumType(GetWalletsWalletIdDelegationFeesResponseUnit, { name: 'GetWalletsWalletIdDelegationFeesResponseUnit' });
+
+export enum DeleteStakePoolsWalletsWalletIdResponseUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(DeleteStakePoolsWalletsWalletIdResponseUnit, { name: 'DeleteStakePoolsWalletsWalletIdResponseUnit' });
+
+export enum DeleteStakePoolsWalletsWalletIdResponseDirection {
+  Outgoing = 'outgoing',
+  Incoming = 'incoming'
+}
+registerEnumType(DeleteStakePoolsWalletsWalletIdResponseDirection, { name: 'DeleteStakePoolsWalletsWalletIdResponseDirection' });
+
+export enum DeleteStakePoolsWalletsWalletIdResponseStatus {
+  Pending = 'pending',
+  InLedger = 'in_ledger',
+  Expired = 'expired'
+}
+registerEnumType(DeleteStakePoolsWalletsWalletIdResponseStatus, { name: 'DeleteStakePoolsWalletsWalletIdResponseStatus' });
+
+export enum PutStakePoolsStakePoolIdWalletsWalletIdResponseUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(PutStakePoolsStakePoolIdWalletsWalletIdResponseUnit, { name: 'PutStakePoolsStakePoolIdWalletsWalletIdResponseUnit' });
+
+export enum PutStakePoolsStakePoolIdWalletsWalletIdResponseDirection {
+  Outgoing = 'outgoing',
+  Incoming = 'incoming'
+}
+registerEnumType(PutStakePoolsStakePoolIdWalletsWalletIdResponseDirection, { name: 'PutStakePoolsStakePoolIdWalletsWalletIdResponseDirection' });
+
+export enum PutStakePoolsStakePoolIdWalletsWalletIdResponseStatus {
+  Pending = 'pending',
+  InLedger = 'in_ledger',
+  Expired = 'expired'
+}
+registerEnumType(PutStakePoolsStakePoolIdWalletsWalletIdResponseStatus, { name: 'PutStakePoolsStakePoolIdWalletsWalletIdResponseStatus' });
+
+export enum PostWalletsWalletIdCoinSelectionsRandomResponseUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(PostWalletsWalletIdCoinSelectionsRandomResponseUnit, { name: 'PostWalletsWalletIdCoinSelectionsRandomResponseUnit' });
+
+export enum PostWalletsWalletIdCoinSelectionsRandomResponseCertificateType {
+  JoinPool = 'join_pool',
+  QuitPool = 'quit_pool',
+  RegisterRewardAccount = 'register_reward_account'
+}
+registerEnumType(PostWalletsWalletIdCoinSelectionsRandomResponseCertificateType, { name: 'PostWalletsWalletIdCoinSelectionsRandomResponseCertificateType' });
+
+export enum PostWalletsWalletIdCoinSelectionsRandomInputUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(PostWalletsWalletIdCoinSelectionsRandomInputUnit, { name: 'PostWalletsWalletIdCoinSelectionsRandomInputUnit' });
 
 export enum PostWalletsWalletIdCoinSelectionsRandomInputAction {
   Quit = 'quit',
@@ -304,6 +380,16 @@ export enum PostByronWalletsWalletIdAddressesResponseState {
 }
 registerEnumType(PostByronWalletsWalletIdAddressesResponseState, { name: 'PostByronWalletsWalletIdAddressesResponseState' });
 
+export enum PostByronWalletsWalletIdPaymentFeesResponseUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(PostByronWalletsWalletIdPaymentFeesResponseUnit, { name: 'PostByronWalletsWalletIdPaymentFeesResponseUnit' });
+
+export enum PostByronWalletsWalletIdPaymentFeesInputUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(PostByronWalletsWalletIdPaymentFeesInputUnit, { name: 'PostByronWalletsWalletIdPaymentFeesInputUnit' });
+
 export enum GetByronWalletsWalletIdTransactionsResponseUnit {
   Lovelace = 'lovelace'
 }
@@ -328,6 +414,29 @@ export enum ListByronTransactionsOrder {
 }
 registerEnumType(ListByronTransactionsOrder, { name: 'ListByronTransactionsOrder' });
 
+export enum PostByronWalletsWalletIdTransactionsResponseUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(PostByronWalletsWalletIdTransactionsResponseUnit, { name: 'PostByronWalletsWalletIdTransactionsResponseUnit' });
+
+export enum PostByronWalletsWalletIdTransactionsResponseDirection {
+  Outgoing = 'outgoing',
+  Incoming = 'incoming'
+}
+registerEnumType(PostByronWalletsWalletIdTransactionsResponseDirection, { name: 'PostByronWalletsWalletIdTransactionsResponseDirection' });
+
+export enum PostByronWalletsWalletIdTransactionsResponseStatus {
+  Pending = 'pending',
+  InLedger = 'in_ledger',
+  Expired = 'expired'
+}
+registerEnumType(PostByronWalletsWalletIdTransactionsResponseStatus, { name: 'PostByronWalletsWalletIdTransactionsResponseStatus' });
+
+export enum PostByronWalletsWalletIdTransactionsInputUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(PostByronWalletsWalletIdTransactionsInputUnit, { name: 'PostByronWalletsWalletIdTransactionsInputUnit' });
+
 export enum GetByronWalletsWalletIdTransactionsTransactionIdResponseUnit {
   Lovelace = 'lovelace'
 }
@@ -345,6 +454,23 @@ export enum GetByronWalletsWalletIdTransactionsTransactionIdResponseStatus {
   Expired = 'expired'
 }
 registerEnumType(GetByronWalletsWalletIdTransactionsTransactionIdResponseStatus, { name: 'GetByronWalletsWalletIdTransactionsTransactionIdResponseStatus' });
+
+export enum PostByronWalletsWalletIdCoinSelectionsRandomResponseUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(PostByronWalletsWalletIdCoinSelectionsRandomResponseUnit, { name: 'PostByronWalletsWalletIdCoinSelectionsRandomResponseUnit' });
+
+export enum PostByronWalletsWalletIdCoinSelectionsRandomResponseCertificateType {
+  JoinPool = 'join_pool',
+  QuitPool = 'quit_pool',
+  RegisterRewardAccount = 'register_reward_account'
+}
+registerEnumType(PostByronWalletsWalletIdCoinSelectionsRandomResponseCertificateType, { name: 'PostByronWalletsWalletIdCoinSelectionsRandomResponseCertificateType' });
+
+export enum PostByronWalletsWalletIdCoinSelectionsRandomInputUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(PostByronWalletsWalletIdCoinSelectionsRandomInputUnit, { name: 'PostByronWalletsWalletIdCoinSelectionsRandomInputUnit' });
 
 export enum GetByronWalletsWalletIdMigrationsResponseUnit {
   Lovelace = 'lovelace'
@@ -455,17 +581,44 @@ export enum ApiNetworkParametersUnit {
 }
 registerEnumType(ApiNetworkParametersUnit, { name: 'ApiNetworkParametersUnit' });
 
+export enum ApiSelectCoinsPaymentsUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(ApiSelectCoinsPaymentsUnit, { name: 'ApiSelectCoinsPaymentsUnit' });
+
 export enum ApiSelectCoinsActionAction {
   Quit = 'quit',
   Join = 'join'
 }
 registerEnumType(ApiSelectCoinsActionAction, { name: 'ApiSelectCoinsActionAction' });
 
+export enum ApiSelectCoinsDataUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(ApiSelectCoinsDataUnit, { name: 'ApiSelectCoinsDataUnit' });
+
 export enum ApiSelectCoinsDataAction {
   Quit = 'quit',
   Join = 'join'
 }
 registerEnumType(ApiSelectCoinsDataAction, { name: 'ApiSelectCoinsDataAction' });
+
+export enum ApiByronSelectCoinsDataUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(ApiByronSelectCoinsDataUnit, { name: 'ApiByronSelectCoinsDataUnit' });
+
+export enum ApiCoinSelectionUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(ApiCoinSelectionUnit, { name: 'ApiCoinSelectionUnit' });
+
+export enum ApiCoinSelectionCertificateType {
+  JoinPool = 'join_pool',
+  QuitPool = 'quit_pool',
+  RegisterRewardAccount = 'register_reward_account'
+}
+registerEnumType(ApiCoinSelectionCertificateType, { name: 'ApiCoinSelectionCertificateType' });
 
 export enum ApiGCStatusStatus {
   NotApplicable = 'not_applicable',
@@ -610,25 +763,45 @@ export enum ApiHealthCheckHealth {
 }
 registerEnumType(ApiHealthCheckHealth, { name: 'ApiHealthCheckHealth' });
 
+export enum ApiPostTransactionDataByronUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(ApiPostTransactionDataByronUnit, { name: 'ApiPostTransactionDataByronUnit' });
+
+export enum ApiPostTransactionDataUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(ApiPostTransactionDataUnit, { name: 'ApiPostTransactionDataUnit' });
+
 export enum ApiPostTransactionDataWithdrawal {
   Self = 'self'
 }
 registerEnumType(ApiPostTransactionDataWithdrawal, { name: 'ApiPostTransactionDataWithdrawal' });
 
-export enum ApiPostTransactionDataUnit {
-  Second = 'second'
+export enum ApiPostRedemptionDataUnit {
+  Lovelace = 'lovelace'
 }
-registerEnumType(ApiPostTransactionDataUnit, { name: 'ApiPostTransactionDataUnit' });
+registerEnumType(ApiPostRedemptionDataUnit, { name: 'ApiPostRedemptionDataUnit' });
+
+export enum ApiPostTransactionFeeDataByronUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(ApiPostTransactionFeeDataByronUnit, { name: 'ApiPostTransactionFeeDataByronUnit' });
+
+export enum ApiPostTransactionFeeDataUnit {
+  Lovelace = 'lovelace'
+}
+registerEnumType(ApiPostTransactionFeeDataUnit, { name: 'ApiPostTransactionFeeDataUnit' });
 
 export enum ApiPostTransactionFeeDataWithdrawal {
   Self = 'self'
 }
 registerEnumType(ApiPostTransactionFeeDataWithdrawal, { name: 'ApiPostTransactionFeeDataWithdrawal' });
 
-export enum ApiPostTransactionFeeDataUnit {
-  Second = 'second'
+export enum ApiPostRedemptionFeeDataUnit {
+  Lovelace = 'lovelace'
 }
-registerEnumType(ApiPostTransactionFeeDataUnit, { name: 'ApiPostTransactionFeeDataUnit' });
+registerEnumType(ApiPostRedemptionFeeDataUnit, { name: 'ApiPostRedemptionFeeDataUnit' });
 
 export enum SomeByronWalletPostDataStyle {
   Random = 'random'

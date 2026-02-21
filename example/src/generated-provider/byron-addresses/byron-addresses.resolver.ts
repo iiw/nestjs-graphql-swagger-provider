@@ -10,22 +10,22 @@ export class ByronAddressesResolver {
   constructor(private readonly byronAddressesService: ByronAddressesService) {
   }
 
-  @Query(() => GetByronWalletsWalletIdAddressesResponse)
-  async listByronAddresses(@Args('walletId') walletId: string, @Args('state', { type: () => ListByronAddressesState, nullable: true }) state?: ListByronAddressesState | null): Promise<any> {
+  @Query(() => GetByronWalletsWalletIdAddressesResponse, { description: 'List' })
+  async listByronAddresses(@Args('walletId') walletId: string, @Args('state', { type: () => ListByronAddressesState, nullable: true, description: 'An optional filter on the address state.' }) state?: ListByronAddressesState | null): Promise<any> {
         return this.byronAddressesService.listByronAddresses(walletId, state);
   }
 
-  @Mutation(() => PostByronWalletsWalletIdAddressesResponse)
+  @Mutation(() => PostByronWalletsWalletIdAddressesResponse, { description: 'Create Address' })
   async createAddress(@Args('walletId') walletId: string, @Args('input') input: PostByronWalletsWalletIdAddressesInput): Promise<any> {
         return this.byronAddressesService.createAddress(walletId, input);
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Boolean, { description: 'Import Addresses' })
   async importAddresses(@Args('walletId') walletId: string, @Args('input') input: PutByronWalletsWalletIdAddressesInput): Promise<any> {
         return this.byronAddressesService.importAddresses(walletId, input);
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Boolean, { description: 'Import Address' })
   async importAddress(@Args('walletId') walletId: string, @Args('addressId') addressId: string): Promise<any> {
         return this.byronAddressesService.importAddress(walletId, addressId);
   }

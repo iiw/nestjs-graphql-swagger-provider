@@ -9,7 +9,7 @@ export class ByronCoinSelectionsResolver {
   constructor(private readonly byronCoinSelectionsService: ByronCoinSelectionsService) {
   }
 
-  @Mutation(() => PostByronWalletsWalletIdCoinSelectionsRandomResponse)
+  @Mutation(() => PostByronWalletsWalletIdCoinSelectionsRandomResponse, { description: 'Random' })
   async byronSelectCoins(@Args('walletId') walletId: string, @Args('input') input: PostByronWalletsWalletIdCoinSelectionsRandomInput): Promise<any> {
         return this.byronCoinSelectionsService.byronSelectCoins(walletId, input);
   }

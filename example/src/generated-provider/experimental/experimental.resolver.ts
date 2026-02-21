@@ -9,7 +9,7 @@ export class ExperimentalResolver {
   constructor(private readonly experimentalService: ExperimentalService) {
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Boolean, { description: 'Sign Metadata' })
   async signMetadata(@Args('walletId') walletId: string, @Args('role', { type: () => SignMetadataRole, nullable: true }) role?: SignMetadataRole | null, @Args('index', { nullable: true }) index?: string | null, @Args('input') input: PostWalletsWalletIdSignaturesRoleIndexInput): Promise<any> {
         return this.experimentalService.signMetadata(walletId, role, index, input);
   }

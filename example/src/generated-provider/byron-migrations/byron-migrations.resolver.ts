@@ -9,12 +9,12 @@ export class ByronMigrationsResolver {
   constructor(private readonly byronMigrationsService: ByronMigrationsService) {
   }
 
-  @Query(() => GetByronWalletsWalletIdMigrationsResponse)
+  @Query(() => GetByronWalletsWalletIdMigrationsResponse, { description: 'Calculate Cost' })
   async getByronWalletMigrationInfo(@Args('walletId') walletId: string): Promise<any> {
         return this.byronMigrationsService.getByronWalletMigrationInfo(walletId);
   }
 
-  @Mutation(() => PostByronWalletsWalletIdMigrationsResponse)
+  @Mutation(() => PostByronWalletsWalletIdMigrationsResponse, { description: 'Migrate' })
   async migrateByronWallet(@Args('walletId') walletId: string, @Args('input') input: PostByronWalletsWalletIdMigrationsInput): Promise<any> {
         return this.byronMigrationsService.migrateByronWallet(walletId, input);
   }

@@ -9,12 +9,12 @@ export class SettingsResolver {
   constructor(private readonly settingsService: SettingsService) {
   }
 
-  @Query(() => GetSettingsResponse)
+  @Query(() => GetSettingsResponse, { description: 'Get settings' })
   async getSettings(): Promise<any> {
         return this.settingsService.getSettings();
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Boolean, { description: 'Update settings' })
   async putSettings(@Args('input') input: PutSettingsInput): Promise<any> {
         return this.settingsService.putSettings(input);
   }

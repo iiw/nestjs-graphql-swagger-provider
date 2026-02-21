@@ -8,8 +8,8 @@ export class UtilsResolver {
   constructor(private readonly utilsService: UtilsService) {
   }
 
-  @Query(() => GetSmashHealthResponse)
-  async getCurrentSmashHealth(@Args('url', { nullable: true }) url?: string | null): Promise<any> {
+  @Query(() => GetSmashHealthResponse, { description: 'Current SMASH health' })
+  async getCurrentSmashHealth(@Args('url', { nullable: true, description: 'check this url for health instead of the currently configured one' }) url?: string | null): Promise<any> {
         return this.utilsService.getCurrentSmashHealth(url);
   }
 }
