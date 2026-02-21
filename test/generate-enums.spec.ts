@@ -22,41 +22,38 @@ describe('generate with enums', () => {
     expect(fs.existsSync(enumsPath)).toBe(true);
   });
 
-  it('should generate enum declarations with registerEnumType', async () => {
+  it('should import enums from api-client and register them', async () => {
     await generate(ENUM_FIXTURE_PATH, outputDir);
 
     const content = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
     expect(content).toContain('registerEnumType');
-    expect(content).toContain('enum PetStatus');
-    expect(content).toContain('enum Priority');
+    expect(content).toContain("from './api-client'");
+    expect(content).toContain('PetStatus');
+    expect(content).toContain('Priority');
   });
 
-  it('should generate named string enum members correctly', async () => {
+  it('should re-export imported enums', async () => {
     await generate(ENUM_FIXTURE_PATH, outputDir);
 
     const content = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
-    expect(content).toContain("Available = 'available'");
-    expect(content).toContain("Pending = 'pending'");
-    expect(content).toContain("Sold = 'sold'");
+    expect(content).toMatch(/export\s*\{[^}]*PetStatus[^}]*\}/);
+    expect(content).toMatch(/export\s*\{[^}]*Priority[^}]*\}/);
   });
 
-  it('should generate integer enum members correctly', async () => {
+  it('should alias enums when api-client name differs (PetSize → PetSizeEnum)', async () => {
     await generate(ENUM_FIXTURE_PATH, outputDir);
 
     const content = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
-    expect(content).toContain('Value_1 = 1');
-    expect(content).toContain('Value_2 = 2');
-    expect(content).toContain('Value_3 = 3');
+    expect(content).toContain('PetSizeEnum as PetSize');
+    expect(content).toContain("registerEnumType(PetSize, { name: 'PetSize' })");
   });
 
-  it('should generate inline enum (PetSize)', async () => {
+  it('should not duplicate enum declarations for matched enums', async () => {
     await generate(ENUM_FIXTURE_PATH, outputDir);
 
     const content = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
-    expect(content).toContain('enum PetSize');
-    expect(content).toContain("Small = 'small'");
-    expect(content).toContain("Medium = 'medium'");
-    expect(content).toContain("Large = 'large'");
+    expect(content).not.toContain('enum PetStatus');
+    expect(content).not.toContain('enum Priority');
   });
 
   it('should import enums in models that use enum fields', async () => {

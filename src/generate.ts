@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import { IndentationText, Project, QuoteKind } from 'ts-morph';
 import { generateApiClient } from './generators/api-client.js';
 import { generateDtos } from './generators/dto.js';
+import { extractApiClientEnums, matchEnumsToApiClient } from './generators/api-client-enums.js';
 import { generateEnums } from './generators/enums.js';
 import { generateModels } from './generators/models.js';
 import { generateModule } from './generators/module.js';
@@ -61,12 +62,14 @@ export async function generate(input: string, output: string, options?: Generate
 
   if (spec.enums.length > 0) {
     console.log('Generating enums...');
+    const apiClientEnums = extractApiClientEnums(outputDir);
+    const enumMatchResult = matchEnumsToApiClient(spec.enums, apiClientEnums);
     const enumsFile = project.createSourceFile(
       path.join(outputDir, 'enums.ts'),
       '',
       { overwrite: true },
     );
-    generateEnums(enumsFile, spec.enums);
+    generateEnums(enumsFile, enumMatchResult);
   }
 
   for (const controller of spec.controllers) {

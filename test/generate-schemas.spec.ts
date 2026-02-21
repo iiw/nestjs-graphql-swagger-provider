@@ -56,8 +56,10 @@ describe('generate with $ref fixture', () => {
     await generate(REFS_FIXTURE_PATH, outputDir);
 
     const content = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
-    expect(content).toContain('enum PetStatus');
-    expect(content).toContain('enum OwnerStatus');
+    expect(content).toContain('PetStatus');
+    expect(content).toContain('OwnerStatus');
+    expect(content).toContain("registerEnumType(PetStatus, { name: 'PetStatus' })");
+    expect(content).toContain("registerEnumType(OwnerStatus, { name: 'OwnerStatus' })");
   });
 
   it('should use Owner model name for owners controller', async () => {
