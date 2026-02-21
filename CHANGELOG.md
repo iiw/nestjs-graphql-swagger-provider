@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.0.8
+
+### Features
+
+- **`oneOf`/`anyOf` support**: Request bodies and models using `oneOf` or `anyOf` schemas now generate properly populated `@InputType()` and `@ObjectType()` classes instead of empty ones. All variant properties are merged into a single flat class; a property is required only if required in every variant.
+
+### Bug Fixes
+
+- **Circular schema protection**: Added `WeakSet`-based cycle detection to both `flattenAllOf` and `flattenOneOf` to prevent infinite recursion on recursive schemas (e.g. Cardano `ScriptValue`).
+- **Schema guards**: `oneOf`/`anyOf` schemas are no longer incorrectly treated as primitives or filtered out of global schema extraction.
+
+### Tests
+
+- Added `petstore-oneof.json` fixture and integration tests for `oneOf` request body generation.
+
 ## 0.0.7
 
 ### Bug Fixes
