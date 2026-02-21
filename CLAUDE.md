@@ -74,6 +74,16 @@ The generated code requires these packages in the consuming project:
 - `axios` (used by the generated REST client)
 - `reflect-metadata`, `rxjs`
 
+### Intentionally out of scope
+
+These features have been evaluated and deliberately excluded:
+
+- **Default values** (`default` in OpenAPI) — the REST API is the source of truth for defaults. Duplicating them in the GraphQL layer risks divergence and masks missing data.
+- **Validation decorators** (class-validator) — adds a runtime dependency and duplicates validation already performed by the underlying REST API. The GraphQL layer is a proxy, not the validation boundary.
+- **Discriminator-based union codegen** — the IR captures discriminator info, but generating `createUnionType()` with `resolveType` adds significant complexity for a niche feature. The current flat-merge of oneOf/anyOf variants (all properties optional) is sufficient.
+- **File upload / multipart** (`multipart/form-data`) — out of scope for a GraphQL proxy layer. File uploads should be handled separately.
+- **Security schemes** — auth is a transport concern handled via interceptors, middleware, or the `RequestConfigFactory` hook, not generated into the GraphQL schema.
+
 ### Key rules
 
 - All generated output is TypeScript (`.ts` files)
