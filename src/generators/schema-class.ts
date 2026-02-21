@@ -33,6 +33,9 @@ function addFieldDecorator(
   if (prop.description) {
     options.push(`description: '${escapeStringLiteral(prop.description)}'`);
   }
+  if (prop.deprecated) {
+    options.push(`deprecationReason: 'Deprecated'`);
+  }
 
   if (prop.isArray) {
     if (options.length > 0) {

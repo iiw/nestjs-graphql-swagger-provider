@@ -54,6 +54,7 @@ export async function parseSpec(spec: Record<string, unknown>): Promise<ParsedSp
           method,
           operationId,
           summary: operation.summary ?? operation.description,
+          ...(operation.deprecated ? { deprecated: true } : {}),
           parameters: extractParameters(operation.parameters, operationId, schemaRegistry),
           requestBody: extractRequestBody(
             operation.requestBody as OpenAPIV3_1.RequestBodyObject | undefined,

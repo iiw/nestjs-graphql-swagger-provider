@@ -386,6 +386,33 @@ describe('lowerPropertyNode — description', () => {
   });
 });
 
+describe('lowerPropertyNode — deprecated', () => {
+  it('should preserve deprecated on lowered property', () => {
+    const propNode: PropertyNode = {
+      name: 'legacyId',
+      schema: { kind: 'primitive', type: 'string' },
+      required: false,
+      nullable: false,
+      deprecated: true,
+    };
+
+    const result = lowerPropertyNode(propNode, makeRegistry(), 'Pet');
+    expect(result.deprecated).toBe(true);
+  });
+
+  it('should not set deprecated when not present', () => {
+    const propNode: PropertyNode = {
+      name: 'name',
+      schema: { kind: 'primitive', type: 'string' },
+      required: true,
+      nullable: false,
+    };
+
+    const result = lowerPropertyNode(propNode, makeRegistry(), 'Pet');
+    expect(result.deprecated).toBeUndefined();
+  });
+});
+
 describe('lowerPropertyNode — array of enums', () => {
   it('should lower array of enums correctly', () => {
     const propNode: PropertyNode = {

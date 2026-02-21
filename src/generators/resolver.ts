@@ -45,6 +45,9 @@ function buildResolverMethodParams(endpoint: ParsedEndpoint): {
     if (param.description) {
       argsOpts.push(`description: '${escapeStringLiteral(param.description)}'`);
     }
+    if (param.deprecated) {
+      argsOpts.push(`deprecationReason: 'Deprecated'`);
+    }
 
     const argsArgs: string[] = [`'${param.name}'`];
     if (argsOpts.length > 0) {
@@ -145,9 +148,16 @@ export function generateResolver(
       returnTypeArg = '() => Boolean';
     }
 
-    const decoratorArgs: string[] = [returnTypeArg];
+    const decoratorOpts: string[] = [];
     if (endpoint.summary) {
-      decoratorArgs.push(`{ description: '${escapeStringLiteral(endpoint.summary)}' }`);
+      decoratorOpts.push(`description: '${escapeStringLiteral(endpoint.summary)}'`);
+    }
+    if (endpoint.deprecated) {
+      decoratorOpts.push(`deprecationReason: 'Deprecated'`);
+    }
+    const decoratorArgs: string[] = [returnTypeArg];
+    if (decoratorOpts.length > 0) {
+      decoratorArgs.push(`{ ${decoratorOpts.join(', ')} }`);
     }
 
     return {

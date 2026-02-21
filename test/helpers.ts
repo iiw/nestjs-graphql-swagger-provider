@@ -17,6 +17,7 @@ export const PRICING_API_FIXTURE_PATH = path.join(FIXTURES_DIR, 'pricing-api-swa
 export const ONEOF_FIXTURE_PATH = path.join(FIXTURES_DIR, 'petstore-oneof.json');
 export const READONLY_FIXTURE_PATH = path.join(FIXTURES_DIR, 'petstore-readonly.json');
 export const DESCRIPTIONS_FIXTURE_PATH = path.join(FIXTURES_DIR, 'petstore-descriptions.json');
+export const DEPRECATED_FIXTURE_PATH = path.join(FIXTURES_DIR, 'petstore-deprecated.json');
 
 export function createOutputDir(prefix = 'nestjs-graphql-test-'): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));

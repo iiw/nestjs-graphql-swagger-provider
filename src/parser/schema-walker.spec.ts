@@ -189,6 +189,25 @@ describe('walkSchema objects', () => {
     expect(node.properties[0].description).toBe('The pet name');
   });
 
+  it('should extract deprecated from properties', () => {
+    const node = walkSchema(
+      {
+        type: 'object',
+        properties: {
+          legacyId: { type: 'string', deprecated: true } as unknown as OpenAPIV3_1.SchemaObject,
+          name: { type: 'string' },
+        },
+      },
+      makeCtx(),
+    ) as ObjectSchemaNode;
+
+    const legacyId = node.properties.find((p) => p.name === 'legacyId')!;
+    expect(legacyId.deprecated).toBe(true);
+
+    const name = node.properties.find((p) => p.name === 'name')!;
+    expect(name.deprecated).toBeUndefined();
+  });
+
   it('should detect nullable via nullable flag', () => {
     const node = walkSchema(
       {

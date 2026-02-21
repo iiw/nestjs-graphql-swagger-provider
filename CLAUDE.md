@@ -64,6 +64,8 @@ For each Swagger controller (e.g. `Users`), generates a feature folder:
 - **Request body DTOs** → `@InputType()` classes
 - **Path and query parameters** → `@Args()` on resolver methods
 - **Response types** → `@ObjectType()` models
+- **OpenAPI descriptions** → `description` option on `@Field()`, `@Args()`, `@Query()`, `@Mutation()` decorators
+- **Header / cookie parameters** → **intentionally ignored**. GraphQL operates at a higher abstraction level than HTTP; headers are a transport concern. Auth headers, rate-limit headers, custom headers etc. belong in the HTTP layer (interceptors, middleware, or the `RequestConfigFactory` hook) — not in the GraphQL schema. The generated `RequestConfigFactory` injection point is the intended extension mechanism for consumers who need to pass headers to the underlying REST client.
 
 ### Generated code runtime dependencies
 

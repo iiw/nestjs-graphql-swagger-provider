@@ -68,6 +68,7 @@ export interface PropertyNode {
   readOnly?: boolean;
   writeOnly?: boolean;
   description?: string;
+  deprecated?: boolean;
 }
 
 // ─── Flat types (consumed by generators) ─────────────────────────────
@@ -98,6 +99,8 @@ export interface ParsedProperty {
   writeOnly?: boolean;
   /** OpenAPI description for this property */
   description?: string;
+  /** Whether this property is deprecated */
+  deprecated?: boolean;
 }
 
 export interface ParsedSchema {
@@ -127,6 +130,8 @@ export interface ParsedParameter {
   enumValues?: (string | number)[];
   /** OpenAPI description for this parameter */
   description?: string;
+  /** Whether this parameter is deprecated */
+  deprecated?: boolean;
 }
 
 export interface ParsedErrorResponse {
@@ -140,6 +145,8 @@ export interface ParsedEndpoint {
   method: 'get' | 'post' | 'put' | 'patch' | 'delete';
   operationId: string;
   summary?: string;
+  /** Whether this operation is deprecated */
+  deprecated?: boolean;
   parameters: ParsedParameter[];
   requestBody?: ParsedSchema;
   responseSchema?: ParsedSchema;

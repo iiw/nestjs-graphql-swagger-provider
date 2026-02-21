@@ -139,6 +139,7 @@ function extractPropertyNodes(
       ...(prop.readOnly ? { readOnly: true } : {}),
       ...(prop.writeOnly ? { writeOnly: true } : {}),
       ...(prop.description ? { description: prop.description } : {}),
+      ...(prop.deprecated ? { deprecated: true } : {}),
     };
   });
 }
