@@ -29,7 +29,9 @@ export function extractSchema(
       items &&
       PRIMITIVE_TYPES.has(items.type as string) &&
       !items.properties &&
-      !items.allOf
+      !items.allOf &&
+      !items.oneOf &&
+      !items.anyOf
     ) {
       return {
         name,
@@ -49,7 +51,9 @@ export function extractSchema(
   if (
     PRIMITIVE_TYPES.has(schema.type as string) &&
     !schema.properties &&
-    !schema.allOf
+    !schema.allOf &&
+    !schema.oneOf &&
+    !schema.anyOf
   ) {
     return {
       name,
@@ -71,7 +75,7 @@ export function extractGlobalSchemas(
   if (!schemas) return [];
 
   return Object.entries(schemas)
-    .filter(([, schema]) => schema.type === 'object' || schema.properties || schema.allOf)
+    .filter(([, schema]) => schema.type === 'object' || schema.properties || schema.allOf || schema.oneOf || schema.anyOf)
     .map(([name, schema]) => ({
       name,
       properties: extractProperties(schema, name, refMap),

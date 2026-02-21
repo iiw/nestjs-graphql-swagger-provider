@@ -1,0 +1,101 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Petstore with oneOf",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://petstore.example.com/api/v1"
+    }
+  ],
+  "paths": {
+    "/wallets": {
+      "post": {
+        "tags": ["Wallets"],
+        "operationId": "createWallet",
+        "summary": "Create a wallet",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWalletInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Wallet created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wallet"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Wallets"],
+        "operationId": "listWallets",
+        "summary": "List wallets",
+        "responses": {
+          "200": {
+            "description": "A list of wallets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Wallet"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Wallet": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "balance": { "type": "number" }
+        }
+      },
+      "CreateWalletInput": {
+        "oneOf": [
+          { "$ref": "#/components/schemas/PersonalWalletInput" },
+          { "$ref": "#/components/schemas/BusinessWalletInput" }
+        ]
+      },
+      "PersonalWalletInput": {
+        "type": "object",
+        "required": ["name", "currency", "personalId"],
+        "properties": {
+          "name": { "type": "string" },
+          "currency": { "type": "string" },
+          "personalId": { "type": "string" }
+        }
+      },
+      "BusinessWalletInput": {
+        "type": "object",
+        "required": ["name", "currency", "businessId", "taxNumber"],
+        "properties": {
+          "name": { "type": "string" },
+          "currency": { "type": "string" },
+          "businessId": { "type": "string" },
+          "taxNumber": { "type": "string" }
+        }
+      }
+    }
+  }
+}
