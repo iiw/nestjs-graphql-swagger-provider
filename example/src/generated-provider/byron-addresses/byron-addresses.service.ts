@@ -2,14 +2,14 @@
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
 import { Api } from '../api-client';
 import { PostByronWalletsWalletIdAddressesInput, PutByronWalletsWalletIdAddressesInput } from './byron-addresses.dto';
-import { ListByronAddressesState } from '../enums';
+import { StateEnum1 } from '../enums';
 
 @Injectable()
 export class ByronAddressesService {
   constructor(@Inject('API_CLIENT') private readonly apiClient: Api<unknown>, @Optional() @Inject('REQUEST_CONFIG_FACTORY') private readonly requestConfigFactory?: ((methodName: string, args: Record<string, unknown>) => Record<string, unknown> | undefined)) {
   }
 
-  async listByronAddresses(walletId: string, state: ListByronAddressesState): Promise<any> {
+  async listByronAddresses(walletId: string, state: StateEnum1): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('listByronAddresses', { walletId, state }) ?? {};
         try {
           const response = await this.apiClient.byronWallets.listByronAddresses({ walletId, state }, extraConfig);

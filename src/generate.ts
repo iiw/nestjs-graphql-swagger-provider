@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import { IndentationText, Project, QuoteKind } from 'ts-morph';
 import { generateApiClient } from './generators/api-client.js';
 import { generateDtos } from './generators/dto.js';
-import { extractApiClientEnums, matchEnumsToApiClient } from './generators/api-client-enums.js';
+import { extractApiClientEnums, matchEnumsToApiClient, substituteParameterEnums } from './generators/api-client-enums.js';
 import { generateEnums } from './generators/enums.js';
 import { generateModels } from './generators/models.js';
 import { generateModule } from './generators/module.js';
@@ -64,6 +64,7 @@ export async function generate(input: string, output: string, options?: Generate
     console.log('Generating enums...');
     const { enums: apiClientEnums, paramsEnumMap } = extractApiClientEnums(outputDir);
     const enumMatchResult = matchEnumsToApiClient(spec.enums, apiClientEnums, paramsEnumMap);
+    substituteParameterEnums(spec.controllers, apiClientEnums, paramsEnumMap, enumMatchResult);
     const enumsFile = project.createSourceFile(
       path.join(outputDir, 'enums.ts'),
       '',

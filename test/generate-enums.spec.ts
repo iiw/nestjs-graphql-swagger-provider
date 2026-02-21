@@ -131,4 +131,54 @@ describe('generate with enums', () => {
       );
     expect(fulfillmentRegistrations).toHaveLength(2);
   });
+
+  it('should use parameter enum types in service that are exported from enums.ts', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const enumsContent = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
+    const serviceContent = fs.readFileSync(
+      path.join(outputDir, 'orders', 'orders.service.ts'),
+      'utf-8',
+    );
+
+    // Extract enum names used as parameter types in the service
+    const paramEnumMatches = serviceContent.match(/\w+: (\w+)\)/g) || [];
+    const enumTypesInService = paramEnumMatches
+      .map((m) => m.match(/: (\w+)\)/)?.[1])
+      .filter((t): t is string => !!t && t !== 'any' && t !== 'string' && t !== 'number' && t !== 'boolean');
+
+    // Every enum type used in the service must be exported from enums.ts
+    const exportMatch = enumsContent.match(/export\s*\{([^}]+)\}/);
+    const exportedNames = exportMatch
+      ? exportMatch[1].split(',').map((n) => n.trim())
+      : [];
+
+    for (const enumType of enumTypesInService) {
+      expect(
+        exportedNames,
+        `Service uses enum "${enumType}" but it's not exported from enums.ts`,
+      ).toContain(enumType);
+    }
+  });
+
+  it('should use matching enum types between resolver and service for parameters', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const resolverContent = fs.readFileSync(
+      path.join(outputDir, 'orders', 'orders.resolver.ts'),
+      'utf-8',
+    );
+    const serviceContent = fs.readFileSync(
+      path.join(outputDir, 'orders', 'orders.service.ts'),
+      'utf-8',
+    );
+
+    // The fulfillment enum type in the resolver should match the one in the service
+    const resolverEnumMatch = resolverContent.match(/type: \(\) => (\w+)/);
+    const serviceEnumMatch = serviceContent.match(/fulfillment: (\w+)/);
+
+    expect(resolverEnumMatch).toBeTruthy();
+    expect(serviceEnumMatch).toBeTruthy();
+    expect(resolverEnumMatch![1]).toBe(serviceEnumMatch![1]);
+  });
 });

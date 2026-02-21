@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 import { Project } from 'ts-morph';
-import type { ParsedEnum } from '../parser/types.js';
+import type { ParsedController, ParsedEnum } from '../parser/types.js';
 import { toPascalCase } from '../utils.js';
 
 export interface ApiClientEnum {
@@ -77,8 +77,7 @@ export function extractApiClientEnums(outputDir: string): ApiClientEnumResult {
     const referencedEnums = new Set<string>();
 
     for (const prop of iface.getProperties()) {
-      const typeText = prop.getType().getText();
-      // The type text may be the enum name directly or a union of enum members.
+      const typeText = prop.getType().getText(prop);
       // Check if any known enum name appears as the property type.
       for (const enumName of enumNames) {
         if (typeText === enumName) {
@@ -156,7 +155,7 @@ function findNameMatch(
   return undefined;
 }
 
-function valuesMatch(a: (string | number)[], b: (string | number)[]): boolean {
+export function valuesMatch(a: (string | number)[], b: (string | number)[]): boolean {
   const sortedA = [...a].map(String).sort();
   const sortedB = [...b].map(String).sort();
   return (
@@ -195,4 +194,56 @@ function findValueMatch(
   }
 
   return undefined;
+}
+
+export function substituteParameterEnums(
+  controllers: ParsedController[],
+  apiClientEnums: ApiClientEnum[],
+  paramsEnumMap: Map<string, Set<string>>,
+  enumMatchResult: EnumMatchResult,
+): void {
+  for (const controller of controllers) {
+    for (const endpoint of controller.endpoints) {
+      for (const param of endpoint.parameters) {
+        if (param.type !== 'enum' || !param.enumName || !param.enumValues) continue;
+
+        const operationPrefix = toPascalCase(endpoint.operationId);
+        const paramsEnumNames = paramsEnumMap.get(operationPrefix);
+        if (!paramsEnumNames) continue;
+
+        // Check which api-client enum the current param.enumName is mapped to
+        const currentMatch = enumMatchResult.matched.find(
+          (m) => m.parsedEnum.name === param.enumName,
+        );
+        const currentApiClientEnum = currentMatch?.apiClientEnumName;
+
+        for (const candidateName of paramsEnumNames) {
+          const candidate = apiClientEnums.find((ac) => ac.name === candidateName);
+          if (candidate && valuesMatch(param.enumValues, candidate.values)) {
+            // Only substitute if the current match uses a different api-client enum
+            if (currentApiClientEnum === candidateName) break;
+
+            param.enumName = candidateName;
+            // Ensure the params enum is exported under its own name in enums.ts
+            const alreadyExported = enumMatchResult.matched.some(
+              (m) =>
+                m.apiClientEnumName === candidateName &&
+                m.parsedEnum.name === candidateName,
+            );
+            if (!alreadyExported) {
+              enumMatchResult.matched.push({
+                parsedEnum: {
+                  name: candidateName,
+                  values: candidate.values as (string | number)[],
+                  type: typeof candidate.values[0] === 'number' ? 'integer' : 'string',
+                },
+                apiClientEnumName: candidateName,
+              });
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
 }

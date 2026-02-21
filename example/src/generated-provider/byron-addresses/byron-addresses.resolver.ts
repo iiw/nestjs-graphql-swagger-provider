@@ -2,7 +2,7 @@
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { ByronAddressesService } from './byron-addresses.service';
 import { PostByronWalletsWalletIdAddressesInput, PutByronWalletsWalletIdAddressesInput } from './byron-addresses.dto';
-import { ListByronAddressesState } from '../enums';
+import { StateEnum1 } from '../enums';
 import { GetByronWalletsWalletIdAddressesResponse, PostByronWalletsWalletIdAddressesResponse } from './byron-addresses.models';
 
 @Resolver()
@@ -11,7 +11,7 @@ export class ByronAddressesResolver {
   }
 
   @Query(() => GetByronWalletsWalletIdAddressesResponse, { description: 'List' })
-  async listByronAddresses(@Args('walletId') walletId: string, @Args('state', { type: () => ListByronAddressesState, nullable: true, description: 'An optional filter on the address state.' }) state?: ListByronAddressesState | null): Promise<any> {
+  async listByronAddresses(@Args('walletId') walletId: string, @Args('state', { type: () => StateEnum1, nullable: true, description: 'An optional filter on the address state.' }) state?: StateEnum1 | null): Promise<any> {
         return this.byronAddressesService.listByronAddresses(walletId, state);
   }
 

@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { ParsedEnum } from '../parser/types.js';
-import { type ApiClientEnum, matchEnumsToApiClient } from './api-client-enums.js';
+import type { ParsedController, ParsedEnum } from '../parser/types.js';
+import {
+  type ApiClientEnum,
+  type EnumMatchResult,
+  matchEnumsToApiClient,
+  substituteParameterEnums,
+} from './api-client-enums.js';
 
 describe('matchEnumsToApiClient', () => {
   it('should match by exact name', () => {
@@ -204,5 +209,290 @@ describe('matchEnumsToApiClient', () => {
 
     expect(result.matched).toHaveLength(1);
     expect(result.matched[0].apiClientEnumName).toBe('MyEnum');
+  });
+});
+
+describe('substituteParameterEnums', () => {
+  function makeController(endpoints: ParsedController['endpoints']): ParsedController {
+    return { name: 'Test', endpoints };
+  }
+
+  it('should substitute param.enumName when paramsEnumMap has a matching enum', () => {
+    const controllers: ParsedController[] = [
+      makeController([
+        {
+          path: '/items',
+          method: 'get',
+          operationId: 'listItems',
+          parameters: [
+            {
+              name: 'status',
+              location: 'query',
+              type: 'enum',
+              required: false,
+              isArray: false,
+              enumName: 'ListItemsStatus',
+              enumValues: ['active', 'inactive'],
+            },
+          ],
+          errorResponses: [],
+        },
+      ]),
+    ];
+    const apiClientEnums: ApiClientEnum[] = [
+      { name: 'ListItemsStatusEnum', values: ['active', 'inactive'] },
+      { name: 'StatusEnum1', values: ['active', 'inactive'] },
+    ];
+    const paramsEnumMap = new Map([['ListItems', new Set(['StatusEnum1'])]]);
+    const enumMatchResult: EnumMatchResult = {
+      matched: [
+        {
+          parsedEnum: { name: 'ListItemsStatus', values: ['active', 'inactive'], type: 'string' },
+          apiClientEnumName: 'ListItemsStatusEnum',
+        },
+      ],
+      unmatched: [],
+    };
+
+    substituteParameterEnums(controllers, apiClientEnums, paramsEnumMap, enumMatchResult);
+
+    expect(controllers[0].endpoints[0].parameters[0].enumName).toBe('StatusEnum1');
+  });
+
+  it('should add the params enum to enumMatchResult.matched when not already there', () => {
+    const controllers: ParsedController[] = [
+      makeController([
+        {
+          path: '/items',
+          method: 'get',
+          operationId: 'listItems',
+          parameters: [
+            {
+              name: 'status',
+              location: 'query',
+              type: 'enum',
+              required: false,
+              isArray: false,
+              enumName: 'ListItemsStatus',
+              enumValues: ['active', 'inactive'],
+            },
+          ],
+          errorResponses: [],
+        },
+      ]),
+    ];
+    const apiClientEnums: ApiClientEnum[] = [
+      { name: 'StatusEnum1', values: ['active', 'inactive'] },
+    ];
+    const paramsEnumMap = new Map([['ListItems', new Set(['StatusEnum1'])]]);
+    const enumMatchResult: EnumMatchResult = { matched: [], unmatched: [] };
+
+    substituteParameterEnums(controllers, apiClientEnums, paramsEnumMap, enumMatchResult);
+
+    expect(enumMatchResult.matched).toHaveLength(1);
+    expect(enumMatchResult.matched[0].apiClientEnumName).toBe('StatusEnum1');
+    expect(enumMatchResult.matched[0].parsedEnum.name).toBe('StatusEnum1');
+  });
+
+  it('should not substitute when paramsEnumMap has no entry for the operation', () => {
+    const controllers: ParsedController[] = [
+      makeController([
+        {
+          path: '/items',
+          method: 'get',
+          operationId: 'listItems',
+          parameters: [
+            {
+              name: 'status',
+              location: 'query',
+              type: 'enum',
+              required: false,
+              isArray: false,
+              enumName: 'ListItemsStatus',
+              enumValues: ['active', 'inactive'],
+            },
+          ],
+          errorResponses: [],
+        },
+      ]),
+    ];
+    const apiClientEnums: ApiClientEnum[] = [
+      { name: 'StatusEnum1', values: ['active', 'inactive'] },
+    ];
+    const paramsEnumMap = new Map<string, Set<string>>(); // empty
+    const enumMatchResult: EnumMatchResult = { matched: [], unmatched: [] };
+
+    substituteParameterEnums(controllers, apiClientEnums, paramsEnumMap, enumMatchResult);
+
+    expect(controllers[0].endpoints[0].parameters[0].enumName).toBe('ListItemsStatus');
+    expect(enumMatchResult.matched).toHaveLength(0);
+  });
+
+  it('should not substitute when values do not match', () => {
+    const controllers: ParsedController[] = [
+      makeController([
+        {
+          path: '/items',
+          method: 'get',
+          operationId: 'listItems',
+          parameters: [
+            {
+              name: 'status',
+              location: 'query',
+              type: 'enum',
+              required: false,
+              isArray: false,
+              enumName: 'ListItemsStatus',
+              enumValues: ['active', 'inactive'],
+            },
+          ],
+          errorResponses: [],
+        },
+      ]),
+    ];
+    const apiClientEnums: ApiClientEnum[] = [
+      { name: 'StatusEnum1', values: ['open', 'closed'] }, // different values
+    ];
+    const paramsEnumMap = new Map([['ListItems', new Set(['StatusEnum1'])]]);
+    const enumMatchResult: EnumMatchResult = { matched: [], unmatched: [] };
+
+    substituteParameterEnums(controllers, apiClientEnums, paramsEnumMap, enumMatchResult);
+
+    expect(controllers[0].endpoints[0].parameters[0].enumName).toBe('ListItemsStatus');
+    expect(enumMatchResult.matched).toHaveLength(0);
+  });
+
+  it('should handle multiple parameters in the same operation', () => {
+    const controllers: ParsedController[] = [
+      makeController([
+        {
+          path: '/items',
+          method: 'get',
+          operationId: 'listItems',
+          parameters: [
+            {
+              name: 'status',
+              location: 'query',
+              type: 'enum',
+              required: false,
+              isArray: false,
+              enumName: 'ListItemsStatus',
+              enumValues: ['active', 'inactive'],
+            },
+            {
+              name: 'category',
+              location: 'query',
+              type: 'enum',
+              required: false,
+              isArray: false,
+              enumName: 'ListItemsCategory',
+              enumValues: ['food', 'toys'],
+            },
+          ],
+          errorResponses: [],
+        },
+      ]),
+    ];
+    const apiClientEnums: ApiClientEnum[] = [
+      { name: 'StatusEnum1', values: ['active', 'inactive'] },
+      { name: 'CategoryEnum1', values: ['food', 'toys'] },
+    ];
+    const paramsEnumMap = new Map([
+      ['ListItems', new Set(['StatusEnum1', 'CategoryEnum1'])],
+    ]);
+    const enumMatchResult: EnumMatchResult = { matched: [], unmatched: [] };
+
+    substituteParameterEnums(controllers, apiClientEnums, paramsEnumMap, enumMatchResult);
+
+    expect(controllers[0].endpoints[0].parameters[0].enumName).toBe('StatusEnum1');
+    expect(controllers[0].endpoints[0].parameters[1].enumName).toBe('CategoryEnum1');
+    expect(enumMatchResult.matched).toHaveLength(2);
+  });
+
+  it('should not duplicate matched entry when params enum is already exported under its own name', () => {
+    const controllers: ParsedController[] = [
+      makeController([
+        {
+          path: '/items',
+          method: 'get',
+          operationId: 'listItems',
+          parameters: [
+            {
+              name: 'status',
+              location: 'query',
+              type: 'enum',
+              required: false,
+              isArray: false,
+              enumName: 'ListItemsStatus',
+              enumValues: ['active', 'inactive'],
+            },
+          ],
+          errorResponses: [],
+        },
+      ]),
+    ];
+    const apiClientEnums: ApiClientEnum[] = [
+      { name: 'StatusEnum1', values: ['active', 'inactive'] },
+    ];
+    const paramsEnumMap = new Map([['ListItems', new Set(['StatusEnum1'])]]);
+    const enumMatchResult: EnumMatchResult = {
+      matched: [
+        {
+          parsedEnum: { name: 'StatusEnum1', values: ['active', 'inactive'], type: 'string' },
+          apiClientEnumName: 'StatusEnum1',
+        },
+      ],
+      unmatched: [],
+    };
+
+    substituteParameterEnums(controllers, apiClientEnums, paramsEnumMap, enumMatchResult);
+
+    expect(controllers[0].endpoints[0].parameters[0].enumName).toBe('StatusEnum1');
+    // Should not add a duplicate since StatusEnum1 is already exported under its own name
+    expect(enumMatchResult.matched).toHaveLength(1);
+  });
+
+  it('should not substitute when current match already uses the correct params enum', () => {
+    const controllers: ParsedController[] = [
+      makeController([
+        {
+          path: '/items',
+          method: 'get',
+          operationId: 'listItems',
+          parameters: [
+            {
+              name: 'status',
+              location: 'query',
+              type: 'enum',
+              required: false,
+              isArray: false,
+              enumName: 'ListItemsStatus',
+              enumValues: ['active', 'inactive'],
+            },
+          ],
+          errorResponses: [],
+        },
+      ]),
+    ];
+    const apiClientEnums: ApiClientEnum[] = [
+      { name: 'StatusEnum1', values: ['active', 'inactive'] },
+    ];
+    const paramsEnumMap = new Map([['ListItems', new Set(['StatusEnum1'])]]);
+    // The current match already uses the correct params enum (via value-based matching)
+    const enumMatchResult: EnumMatchResult = {
+      matched: [
+        {
+          parsedEnum: { name: 'ListItemsStatus', values: ['active', 'inactive'], type: 'string' },
+          apiClientEnumName: 'StatusEnum1',
+        },
+      ],
+      unmatched: [],
+    };
+
+    substituteParameterEnums(controllers, apiClientEnums, paramsEnumMap, enumMatchResult);
+
+    // Should NOT substitute — the alias ListItemsStatus → StatusEnum1 is correct
+    expect(controllers[0].endpoints[0].parameters[0].enumName).toBe('ListItemsStatus');
+    expect(enumMatchResult.matched).toHaveLength(1);
   });
 });
