@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.0.7
+
+### Bug Fixes
+
+- **Enum imports in services**: Generated service files now import enum types used in method parameters (matching resolver behavior).
+- **API client argument count**: `buildApiMethodCall()` now bundles all path and query params into a single destructured object to match `swagger-typescript-api`'s calling convention, fixing argument count mismatches.
+- **Non-JSON request bodies**: `extractRequestBody()` now falls back to the first content-type with a schema when `application/json` is unavailable (e.g. `application/octet-stream`).
+- **Invalid class names**: `schemaToName()` now strips all non-alphanumeric characters from path segments, fixing invalid identifiers like `DeleteStakePools*WalletsWalletIdInput` caused by wildcard paths.
+
+### Tests
+
+- Added failing tests for enum import and argument count bugs.
+
 ## 0.0.6
 
 ### Bug Fixes

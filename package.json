@@ -1,6 +1,6 @@
 {
   "name": "nestjs-graphql-swagger-provider",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "CLI code generator: Swagger/OpenAPI to NestJS GraphQL modules",
   "bin": {
     "nestjs-graphql-swagger-provider": "dist/cli/index.js"
