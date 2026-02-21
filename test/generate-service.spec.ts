@@ -30,8 +30,11 @@ function countApiClientMethodArgs(apiClientContent: string, methodName: string):
   const match = apiClientContent.match(pattern);
   if (!match) return null;
 
-  const paramsStr = match[1].trim();
+  let paramsStr = match[1].trim();
   if (paramsStr === '') return 0;
+
+  // Remove trailing comma (swagger-typescript-api uses trailing commas in multiline signatures)
+  paramsStr = paramsStr.replace(/,\s*$/, '');
 
   // Count top-level commas (not inside braces/parens) to determine arg count
   let depth = 0;
@@ -98,7 +101,7 @@ describe('generate service Api client calls', () => {
       path.join(outputDir, 'pets', 'pets.service.ts'),
       'utf-8',
     );
-    expect(content).toContain('this.apiClient.pets.getPet(petId, extraConfig)');
+    expect(content).toContain('this.apiClient.pets.getPet({ petId }, extraConfig)');
   });
 
   it('should call this.apiClient.pets.createPet with request body', async () => {

@@ -4,13 +4,14 @@
 
 ### ~~Missing enum imports in generated service files~~ (fixed in 0.0.7)
 
-### Service-to-API-client argument count mismatch
+### ~~Service-to-API-client argument count mismatch~~ (fixed in 0.0.7)
 
-`swagger-typescript-api` bundles all path params into a single destructured object as the first argument (e.g. `getPet({ petId }, params)`), but the generator passes path params as separate positional arguments (e.g. `getPet(petId, extraConfig)`). This causes argument count mismatches, especially with multiple path params.
+Two issues caused argument count mismatches between generated services and the API client:
 
-**Reproduction**: generate from `petstore.json` — `updatePet` is called with `(petId, input, extraConfig)` (3 args) but the API client signature is `({ petId }, data, params)` (3 params where first is an object). Generate from `sophisticated-swagger.json` — `joinStakePool` is called with `(stakePoolId, walletId, input, extraConfig)` (4 args) but API client expects `({ stakePoolId, walletId }, data, params)` (3 params).
+1. **Path/query params not bundled**: `buildApiMethodCall()` passed path params as separate positional args instead of bundling all path+query params into a single destructured object (matching `swagger-typescript-api`'s convention).
+2. **Non-JSON request bodies ignored**: `extractRequestBody()` only handled `application/json` content-type, skipping bodies like `application/octet-stream` (e.g. `postExternalTransaction`).
 
-**Failing tests**: `test/generate-service.spec.ts` ("should call API client methods with matching argument count", "should match argument count for methods with multiple path params").
+Fixed in `src/generators/service.ts` and `src/parser/request-body.ts`.
 
 ### Invalid characters in generated class names
 

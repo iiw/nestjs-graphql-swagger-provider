@@ -10,9 +10,15 @@ export function extractRequestBody(
 ): ParsedSchema | undefined {
   if (!requestBody || '$ref' in requestBody) return undefined;
 
-  const jsonContent = requestBody.content?.['application/json'];
-  if (!jsonContent?.schema) return undefined;
+  // Prefer application/json, fall back to first content-type with a schema
+  const content = requestBody.content;
+  if (!content) return undefined;
 
-  const schema = jsonContent.schema as OpenAPIV3_1.SchemaObject;
+  const mediaType =
+    content['application/json'] ??
+    Object.values(content).find((mt) => mt?.schema);
+  if (!mediaType?.schema) return undefined;
+
+  const schema = mediaType.schema as OpenAPIV3_1.SchemaObject;
   return extractSchema(schema, name, refMap);
 }

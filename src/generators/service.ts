@@ -14,20 +14,19 @@ function buildApiMethodCall(
   const methodName = endpoint.apiClientMethodName ?? toCamelCase(endpoint.operationId);
   const args: string[] = [];
 
-  // 1. Path params (positional)
-  for (const param of endpoint.parameters.filter((p) => p.location === 'path')) {
-    args.push(param.name);
+  // 1. Combined path + query params object (swagger-typescript-api bundles
+  //    all path and query params into a single destructured first argument)
+  const pathParams = endpoint.parameters.filter((p) => p.location === 'path');
+  const queryParams = endpoint.parameters.filter((p) => p.location === 'query');
+  const allParams = [...pathParams, ...queryParams];
+  if (allParams.length > 0) {
+    args.push(`{ ${allParams.map((p) => p.name).join(', ')} }`);
   }
   // 2. Body (if request body exists)
   if (endpoint.requestBody) {
     args.push('input');
   }
-  // 3. Query params object
-  const queryParams = endpoint.parameters.filter((p) => p.location === 'query');
-  if (queryParams.length > 0) {
-    args.push(`{ ${queryParams.map((p) => p.name).join(', ')} }`);
-  }
-  // 4. extraConfig (always last, maps to RequestParams)
+  // 3. extraConfig (always last, maps to RequestParams)
   args.push('extraConfig');
 
   return `this.apiClient.${namespace}.${methodName}(${args.join(', ')})`;
