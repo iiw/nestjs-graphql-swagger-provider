@@ -2,7 +2,7 @@
 import { InputType, Field, Float } from '@nestjs/graphql';
 
 @InputType()
-export class PostWalletsWalletIdPayment-feesInput {
+export class PostWalletsWalletIdPaymentFeesInput {
 }
 
 @InputType()

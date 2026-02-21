@@ -1,17 +1,17 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
 import { Api } from '../api-client';
-import { PostWalletsWalletIdPaymentFeesInput, PostWalletsWalletIdTransactionsInput } from './transactions.dto';
+import { PostByronWalletsWalletIdPaymentFeesInput, PostByronWalletsWalletIdTransactionsInput } from './byron-transactions.dto';
 
 @Injectable()
-export class TransactionsService {
+export class ByronTransactionsService {
   constructor(@Inject('API_CLIENT') private readonly apiClient: Api<unknown>, @Optional() @Inject('REQUEST_CONFIG_FACTORY') private readonly requestConfigFactory?: ((methodName: string, args: Record<string, unknown>) => Record<string, unknown> | undefined)) {
   }
 
-  async postTransactionFee(walletId: string, input: PostWalletsWalletIdPaymentFeesInput): Promise<any> {
-        const extraConfig = this.requestConfigFactory?.('postTransactionFee', { walletId, input }) ?? {};
+  async postByronTransactionFee(walletId: string, input: PostByronWalletsWalletIdPaymentFeesInput): Promise<any> {
+        const extraConfig = this.requestConfigFactory?.('postByronTransactionFee', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.postTransactionFee(walletId, input, extraConfig);
+          const response = await this.apiClient.byronWallets.postByronTransactionFee(walletId, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -33,10 +33,10 @@ export class TransactionsService {
         }
   }
 
-  async listTransactions(walletId: string, start: string, end: string, order: ListTransactionsOrder, minWithdrawal: number): Promise<any> {
-        const extraConfig = this.requestConfigFactory?.('listTransactions', { walletId, start, end, order, minWithdrawal }) ?? {};
+  async listByronTransactions(walletId: string, start: string, end: string, order: ListByronTransactionsOrder): Promise<any> {
+        const extraConfig = this.requestConfigFactory?.('listByronTransactions', { walletId, start, end, order }) ?? {};
         try {
-          const response = await this.apiClient.wallets.listTransactions(walletId, { start, end, order, minWithdrawal }, extraConfig);
+          const response = await this.apiClient.byronWallets.listByronTransactions(walletId, { start, end, order }, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -52,10 +52,10 @@ export class TransactionsService {
         }
   }
 
-  async postTransaction(walletId: string, input: PostWalletsWalletIdTransactionsInput): Promise<any> {
-        const extraConfig = this.requestConfigFactory?.('postTransaction', { walletId, input }) ?? {};
+  async postByronTransaction(walletId: string, input: PostByronWalletsWalletIdTransactionsInput): Promise<any> {
+        const extraConfig = this.requestConfigFactory?.('postByronTransaction', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.postTransaction(walletId, input, extraConfig);
+          const response = await this.apiClient.byronWallets.postByronTransaction(walletId, input, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -77,10 +77,10 @@ export class TransactionsService {
         }
   }
 
-  async getTransaction(walletId: string, transactionId: string): Promise<any> {
-        const extraConfig = this.requestConfigFactory?.('getTransaction', { walletId, transactionId }) ?? {};
+  async getByronTransaction(walletId: string, transactionId: string): Promise<any> {
+        const extraConfig = this.requestConfigFactory?.('getByronTransaction', { walletId, transactionId }) ?? {};
         try {
-          const response = await this.apiClient.wallets.getTransaction(walletId, transactionId, extraConfig);
+          const response = await this.apiClient.byronWallets.getByronTransaction(walletId, transactionId, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 404) {
@@ -93,10 +93,10 @@ export class TransactionsService {
         }
   }
 
-  async deleteTransaction(walletId: string, transactionId: string): Promise<any> {
-        const extraConfig = this.requestConfigFactory?.('deleteTransaction', { walletId, transactionId }) ?? {};
+  async deleteByronTransaction(walletId: string, transactionId: string): Promise<any> {
+        const extraConfig = this.requestConfigFactory?.('deleteByronTransaction', { walletId, transactionId }) ?? {};
         try {
-          const response = await this.apiClient.wallets.deleteTransaction(walletId, transactionId, extraConfig);
+          const response = await this.apiClient.byronWallets.deleteByronTransaction(walletId, transactionId, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 403) {

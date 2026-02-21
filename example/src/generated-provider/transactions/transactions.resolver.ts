@@ -1,11 +1,9 @@
 /* eslint-disable */
 import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
 import { TransactionsService } from './transactions.service';
-import { PostWalletsWalletIdPayment-feesInput, PostWalletsWalletIdTransactionsInput
+import { PostWalletsWalletIdPaymentFeesInput, PostWalletsWalletIdTransactionsInput } from './transactions.dto';
 import { ListTransactionsOrder } from '../enums';
 import { GetWalletsWalletIdTransactionsResponse, GetWalletsWalletIdTransactionsTransactionIdResponse } from './transactions.models';
-
- } from './transactions.dto';
 
 @Resolver()
 export class TransactionsResolver {
@@ -13,7 +11,7 @@ export class TransactionsResolver {
   }
 
   @Mutation(() => Boolean)
-  async postTransactionFee(@Args('walletId') walletId: string, @Args('input') input: PostWalletsWalletIdPayment-feesInput): Promise<any> {
+  async postTransactionFee(@Args('walletId') walletId: string, @Args('input') input: PostWalletsWalletIdPaymentFeesInput): Promise<any> {
         return this.transactionsService.postTransactionFee(walletId, input);
   }
 
