@@ -1,6 +1,7 @@
 import * as path from 'node:path';
 import { Project } from 'ts-morph';
 import type { ParsedEnum } from '../parser/types.js';
+import { toPascalCase } from '../utils.js';
 
 export interface ApiClientEnum {
   name: string;
@@ -17,12 +18,18 @@ export interface EnumMatchResult {
   unmatched: ParsedEnum[];
 }
 
-export function extractApiClientEnums(outputDir: string): ApiClientEnum[] {
+export interface ApiClientEnumResult {
+  enums: ApiClientEnum[];
+  paramsEnumMap: Map<string, Set<string>>;
+}
+
+export function extractApiClientEnums(outputDir: string): ApiClientEnumResult {
   const apiClientPath = path.join(outputDir, 'api-client.ts');
   const project = new Project();
   const sourceFile = project.addSourceFileAtPath(apiClientPath);
 
-  const result: ApiClientEnum[] = [];
+  const enums: ApiClientEnum[] = [];
+  const enumNames = new Set<string>();
 
   for (const enumDecl of sourceFile.getEnums()) {
     if (!enumDecl.isExported()) continue;
@@ -52,22 +59,71 @@ export function extractApiClientEnums(outputDir: string): ApiClientEnum[] {
       }
     }
 
-    result.push({ name, values });
+    enums.push({ name, values });
+    enumNames.add(name);
   }
 
-  return result;
+  // Parse *Params interfaces to build paramsEnumMap
+  const paramsEnumMap = new Map<string, Set<string>>();
+  const paramsPattern = /^(.+?)Params\d*$/;
+
+  for (const iface of sourceFile.getInterfaces()) {
+    if (!iface.isExported()) continue;
+    const ifaceName = iface.getName();
+    const match = paramsPattern.exec(ifaceName);
+    if (!match) continue;
+
+    const operationPrefix = match[1]; // e.g. "ListByronAddresses"
+    const referencedEnums = new Set<string>();
+
+    for (const prop of iface.getProperties()) {
+      const typeText = prop.getType().getText();
+      // The type text may be the enum name directly or a union of enum members.
+      // Check if any known enum name appears as the property type.
+      for (const enumName of enumNames) {
+        if (typeText === enumName) {
+          referencedEnums.add(enumName);
+        }
+      }
+    }
+
+    if (referencedEnums.size > 0) {
+      const existing = paramsEnumMap.get(operationPrefix);
+      if (existing) {
+        for (const e of referencedEnums) existing.add(e);
+      } else {
+        paramsEnumMap.set(operationPrefix, referencedEnums);
+      }
+    }
+  }
+
+  return { enums, paramsEnumMap };
 }
 
 export function matchEnumsToApiClient(
   parsedEnums: ParsedEnum[],
   apiClientEnums: ApiClientEnum[],
+  paramsEnumMap?: Map<string, Set<string>>,
 ): EnumMatchResult {
   const matched: EnumMapping[] = [];
   const unmatched: ParsedEnum[] = [];
   const consumed = new Set<string>();
 
+  // Pass 1: Name-based matching only (exact name + suffix)
+  const pendingAfterPass1: ParsedEnum[] = [];
   for (const parsedEnum of parsedEnums) {
-    const match = findMatch(parsedEnum, apiClientEnums, consumed);
+    const match = findNameMatch(parsedEnum, apiClientEnums, consumed);
+    if (match) {
+      matched.push({ parsedEnum, apiClientEnumName: match.name });
+      consumed.add(match.name);
+    } else {
+      pendingAfterPass1.push(parsedEnum);
+    }
+  }
+
+  // Pass 2: Value-based matching with params-interface preference
+  for (const parsedEnum of pendingAfterPass1) {
+    const match = findValueMatch(parsedEnum, apiClientEnums, consumed, paramsEnumMap);
     if (match) {
       matched.push({ parsedEnum, apiClientEnumName: match.name });
       consumed.add(match.name);
@@ -79,7 +135,7 @@ export function matchEnumsToApiClient(
   return { matched, unmatched };
 }
 
-function findMatch(
+function findNameMatch(
   parsedEnum: ParsedEnum,
   apiClientEnums: ApiClientEnum[],
   consumed: Set<string>,
@@ -97,15 +153,43 @@ function findMatch(
   );
   if (suffixMatch) return suffixMatch;
 
-  // Strategy 3: Value-based match
-  const parsedValues = [...parsedEnum.values].map(String).sort();
+  return undefined;
+}
+
+function valuesMatch(a: (string | number)[], b: (string | number)[]): boolean {
+  const sortedA = [...a].map(String).sort();
+  const sortedB = [...b].map(String).sort();
+  return (
+    sortedA.length === sortedB.length &&
+    sortedA.every((v, i) => v === sortedB[i])
+  );
+}
+
+function findValueMatch(
+  parsedEnum: ParsedEnum,
+  apiClientEnums: ApiClientEnum[],
+  consumed: Set<string>,
+  paramsEnumMap?: Map<string, Set<string>>,
+): ApiClientEnum | undefined {
+  // If the parsed enum has an operationId and a params-interface enum exists, prefer it
+  if (paramsEnumMap && parsedEnum.operationId) {
+    const operationPrefix = toPascalCase(parsedEnum.operationId);
+    const paramsEnumNames = paramsEnumMap.get(operationPrefix);
+    if (paramsEnumNames) {
+      for (const candidateName of paramsEnumNames) {
+        if (consumed.has(candidateName)) continue;
+        const candidate = apiClientEnums.find((ac) => ac.name === candidateName);
+        if (candidate && valuesMatch(parsedEnum.values, candidate.values)) {
+          return candidate;
+        }
+      }
+    }
+  }
+
+  // Fallback: first unconsumed enum with matching values
   for (const ac of apiClientEnums) {
     if (consumed.has(ac.name)) continue;
-    const acValues = [...ac.values].map(String).sort();
-    if (
-      parsedValues.length === acValues.length &&
-      parsedValues.every((v, i) => v === acValues[i])
-    ) {
+    if (valuesMatch(parsedEnum.values, ac.values)) {
       return ac;
     }
   }

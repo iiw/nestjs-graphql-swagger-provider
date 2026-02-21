@@ -62,8 +62,8 @@ export async function generate(input: string, output: string, options?: Generate
 
   if (spec.enums.length > 0) {
     console.log('Generating enums...');
-    const apiClientEnums = extractApiClientEnums(outputDir);
-    const enumMatchResult = matchEnumsToApiClient(spec.enums, apiClientEnums);
+    const { enums: apiClientEnums, paramsEnumMap } = extractApiClientEnums(outputDir);
+    const enumMatchResult = matchEnumsToApiClient(spec.enums, apiClientEnums, paramsEnumMap);
     const enumsFile = project.createSourceFile(
       path.join(outputDir, 'enums.ts'),
       '',

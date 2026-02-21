@@ -47,7 +47,11 @@ export function collectInlineEnums(
 ): ParsedEnum[] {
   const enumMap = new Map<string, ParsedEnum>();
 
-  function collectFromProperties(properties: ParsedProperty[]): void {
+  function collectFromProperties(
+    properties: ParsedProperty[],
+    context?: ParsedEnum['context'],
+    operationId?: string,
+  ): void {
     for (const prop of properties) {
       if (prop.type === 'enum' && prop.enumName && prop.enumValues && !globalEnumNames.has(prop.enumName)) {
         if (!enumMap.has(prop.enumName)) {
@@ -55,11 +59,13 @@ export function collectInlineEnums(
             name: prop.enumName,
             values: prop.enumValues,
             type: inferEnumType(prop.enumValues),
+            context,
+            operationId,
           });
         }
       }
       if (prop.properties) {
-        collectFromProperties(prop.properties);
+        collectFromProperties(prop.properties, context, operationId);
       }
     }
   }
@@ -67,10 +73,10 @@ export function collectInlineEnums(
   for (const controller of controllers) {
     for (const endpoint of controller.endpoints) {
       if (endpoint.responseSchema) {
-        collectFromProperties(endpoint.responseSchema.properties);
+        collectFromProperties(endpoint.responseSchema.properties, 'response', endpoint.operationId);
       }
       if (endpoint.requestBody) {
-        collectFromProperties(endpoint.requestBody.properties);
+        collectFromProperties(endpoint.requestBody.properties, 'request-body', endpoint.operationId);
       }
       for (const param of endpoint.parameters) {
         if (param.type === 'enum' && param.enumName && param.enumValues && !globalEnumNames.has(param.enumName)) {
@@ -79,6 +85,8 @@ export function collectInlineEnums(
               name: param.enumName,
               values: param.enumValues,
               type: inferEnumType(param.enumValues),
+              context: 'parameter',
+              operationId: endpoint.operationId,
             });
           }
         }
@@ -87,7 +95,7 @@ export function collectInlineEnums(
   }
 
   for (const schema of schemas) {
-    collectFromProperties(schema.properties);
+    collectFromProperties(schema.properties, 'schema');
   }
 
   return Array.from(enumMap.values());

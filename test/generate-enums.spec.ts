@@ -102,4 +102,33 @@ describe('generate with enums', () => {
     expect(content).toContain("from '../enums'");
     expect(content).toContain('PetStatus');
   });
+
+  it('should register both parameter and response enums with same values', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
+
+    // Both the parameter enum (ListOrdersFulfillment) and response enum (OrderFulfillment)
+    // should be registered — they have the same values but different contexts
+    expect(content).toContain('ListOrdersFulfillment');
+    expect(content).toContain('OrderFulfillment');
+    expect(content).toContain('registerEnumType');
+  });
+
+  it('should map parameter and response enums to different api-client enums', async () => {
+    await generate(ENUM_FIXTURE_PATH, outputDir);
+
+    const content = fs.readFileSync(path.join(outputDir, 'enums.ts'), 'utf-8');
+
+    // Both enums should be imported from api-client (matched, not inline-generated)
+    // Count how many registerEnumType calls reference fulfillment-related enums
+    const fulfillmentRegistrations = content
+      .split('\n')
+      .filter(
+        (line) =>
+          line.includes('registerEnumType') &&
+          (line.includes('ListOrdersFulfillment') || line.includes('OrderFulfillment')),
+      );
+    expect(fulfillmentRegistrations).toHaveLength(2);
+  });
 });

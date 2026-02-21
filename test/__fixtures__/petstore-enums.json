@@ -97,6 +97,39 @@
           }
         }
       }
+    },
+    "/orders": {
+      "get": {
+        "tags": ["Orders"],
+        "operationId": "listOrders",
+        "summary": "List orders with fulfillment filter",
+        "parameters": [
+          {
+            "name": "fulfillment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["pending", "shipped", "delivered"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of orders",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Order"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -144,6 +177,19 @@
           "size": {
             "type": "string",
             "enum": ["small", "medium", "large"]
+          }
+        }
+      },
+      "Order": {
+        "type": "object",
+        "required": ["id", "fulfillment"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fulfillment": {
+            "type": "string",
+            "enum": ["pending", "shipped", "delivered"]
           }
         }
       }

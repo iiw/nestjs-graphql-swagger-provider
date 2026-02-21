@@ -77,6 +77,8 @@ export interface ParsedEnum {
   name: string;
   values: (string | number)[];
   type: 'string' | 'integer';
+  context?: 'parameter' | 'request-body' | 'response' | 'schema';
+  operationId?: string;
 }
 
 export interface ParsedProperty {
