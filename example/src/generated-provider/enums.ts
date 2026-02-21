@@ -63,6 +63,11 @@ export enum PutWalletsWalletIdResponseStatus {
 }
 registerEnumType(PutWalletsWalletIdResponseStatus, { name: 'PutWalletsWalletIdResponseStatus' });
 
+export enum PostWalletsWalletIdPaymentFeesInputUnit {
+  Second = 'second'
+}
+registerEnumType(PostWalletsWalletIdPaymentFeesInputUnit, { name: 'PostWalletsWalletIdPaymentFeesInputUnit' });
+
 export enum GetWalletsWalletIdTransactionsResponseUnit {
   Lovelace = 'lovelace'
 }
@@ -86,6 +91,11 @@ export enum ListTransactionsOrder {
   Descending = 'descending'
 }
 registerEnumType(ListTransactionsOrder, { name: 'ListTransactionsOrder' });
+
+export enum PostWalletsWalletIdTransactionsInputUnit {
+  Second = 'second'
+}
+registerEnumType(PostWalletsWalletIdTransactionsInputUnit, { name: 'PostWalletsWalletIdTransactionsInputUnit' });
 
 export enum GetWalletsWalletIdTransactionsTransactionIdResponseUnit {
   Lovelace = 'lovelace'
@@ -167,6 +177,12 @@ export enum GetWalletsWalletIdDelegationFeesResponseUnit {
 }
 registerEnumType(GetWalletsWalletIdDelegationFeesResponseUnit, { name: 'GetWalletsWalletIdDelegationFeesResponseUnit' });
 
+export enum PostWalletsWalletIdCoinSelectionsRandomInputAction {
+  Quit = 'quit',
+  Join = 'join'
+}
+registerEnumType(PostWalletsWalletIdCoinSelectionsRandomInputAction, { name: 'PostWalletsWalletIdCoinSelectionsRandomInputAction' });
+
 export enum GetWalletsWalletIdMigrationsResponseUnit {
   Lovelace = 'lovelace'
 }
@@ -225,6 +241,11 @@ export enum PostByronWalletsResponseStatus {
   NotResponding = 'not_responding'
 }
 registerEnumType(PostByronWalletsResponseStatus, { name: 'PostByronWalletsResponseStatus' });
+
+export enum PostByronWalletsInputStyle {
+  Random = 'random'
+}
+registerEnumType(PostByronWalletsInputStyle, { name: 'PostByronWalletsInputStyle' });
 
 export enum GetByronWalletsWalletIdStatisticsUtxosResponseUnit {
   Lovelace = 'lovelace'
@@ -440,6 +461,12 @@ export enum ApiSelectCoinsActionAction {
 }
 registerEnumType(ApiSelectCoinsActionAction, { name: 'ApiSelectCoinsActionAction' });
 
+export enum ApiSelectCoinsDataAction {
+  Quit = 'quit',
+  Join = 'join'
+}
+registerEnumType(ApiSelectCoinsDataAction, { name: 'ApiSelectCoinsDataAction' });
+
 export enum ApiGCStatusStatus {
   NotApplicable = 'not_applicable',
   NotStarted = 'not_started',
@@ -602,3 +629,8 @@ export enum ApiPostTransactionFeeDataUnit {
   Second = 'second'
 }
 registerEnumType(ApiPostTransactionFeeDataUnit, { name: 'ApiPostTransactionFeeDataUnit' });
+
+export enum SomeByronWalletPostDataStyle {
+  Random = 'random'
+}
+registerEnumType(SomeByronWalletPostDataStyle, { name: 'SomeByronWalletPostDataStyle' });
