@@ -44,7 +44,7 @@ export class AddressesService {
   async postAnyAddress(input: PostAddressesInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('postAnyAddress', { input }) ?? {};
         try {
-          const response = await this.apiClient.addresses.postAnyAddress(input as unknown as PostAnyAddressPayload, extraConfig);
+          const response = await this.apiClient.addresses.postAnyAddress(input as PostAnyAddressPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

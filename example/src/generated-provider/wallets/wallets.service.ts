@@ -24,7 +24,7 @@ export class WalletsService {
   async postWallet(input: PostWalletsInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('postWallet', { input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.postWallet(input as unknown as PostWalletPayload, extraConfig);
+          const response = await this.apiClient.wallets.postWallet(input as PostWalletPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -81,7 +81,7 @@ export class WalletsService {
   async putWallet(walletId: string, input: PutWalletsWalletIdInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('putWallet', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.putWallet({ walletId }, input as unknown as PutWalletPayload, extraConfig);
+          const response = await this.apiClient.wallets.putWallet({ walletId }, input as PutWalletPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -122,7 +122,7 @@ export class WalletsService {
   async putWalletPassphrase(walletId: string, input: PutWalletsWalletIdPassphraseInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('putWalletPassphrase', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.putWalletPassphrase({ walletId }, input as unknown as PutWalletPassphrasePayload, extraConfig);
+          const response = await this.apiClient.wallets.putWalletPassphrase({ walletId }, input as PutWalletPassphrasePayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

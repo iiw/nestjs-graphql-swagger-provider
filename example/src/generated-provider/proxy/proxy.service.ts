@@ -11,7 +11,7 @@ export class ProxyService {
   async postExternalTransaction(input: PostProxyTransactionsInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('postExternalTransaction', { input }) ?? {};
         try {
-          const response = await this.apiClient.proxy.postExternalTransaction(input as unknown as PostExternalTransactionPayload, extraConfig);
+          const response = await this.apiClient.proxy.postExternalTransaction(input as PostExternalTransactionPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

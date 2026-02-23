@@ -12,7 +12,7 @@ export class ExperimentalService {
   async signMetadata(walletId: string, role: SignMetadataRole, index: string, input: PostWalletsWalletIdSignaturesRoleIndexInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('signMetadata', { walletId, role, index, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.signMetadata({ walletId, role, index }, input as unknown as SignMetadataPayload, extraConfig);
+          const response = await this.apiClient.wallets.signMetadata({ walletId, role, index }, input as SignMetadataPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

@@ -31,7 +31,7 @@ export class ByronAddressesService {
   async createAddress(walletId: string, input: PostByronWalletsWalletIdAddressesInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('createAddress', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.createAddress({ walletId }, input as unknown as CreateAddressPayload, extraConfig);
+          const response = await this.apiClient.byronWallets.createAddress({ walletId }, input as CreateAddressPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -53,7 +53,7 @@ export class ByronAddressesService {
   async importAddresses(walletId: string, input: PutByronWalletsWalletIdAddressesInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('importAddresses', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.importAddresses({ walletId }, input as unknown as ImportAddressesPayload, extraConfig);
+          const response = await this.apiClient.byronWallets.importAddresses({ walletId }, input as ImportAddressesPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

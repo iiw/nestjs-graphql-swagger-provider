@@ -30,7 +30,7 @@ export class MigrationsService {
   async migrateShelleyWallet(walletId: string, input: PostWalletsWalletIdMigrationsInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('migrateShelleyWallet', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.migrateShelleyWallet({ walletId }, input as unknown as MigrateShelleyWalletPayload, extraConfig);
+          const response = await this.apiClient.wallets.migrateShelleyWallet({ walletId }, input as MigrateShelleyWalletPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 403) {
