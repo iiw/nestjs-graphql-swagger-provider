@@ -104,25 +104,27 @@ describe('generate service Api client calls', () => {
     expect(content).toContain('this.apiClient.pets.getPet({ petId }, extraConfig)');
   });
 
-  it('should call this.apiClient.pets.createPet with request body', async () => {
+  it('should call this.apiClient.pets.createPet with request body cast to api-client type', async () => {
     await generate(FIXTURE_PATH, outputDir);
 
     const content = fs.readFileSync(
       path.join(outputDir, 'pets', 'pets.service.ts'),
       'utf-8',
     );
-    expect(content).toContain('this.apiClient.pets.createPet(input, extraConfig)');
+    // All request bodies are now cast to the api-client's expected type via unknown
+    expect(content).toMatch(/this\.apiClient\.pets\.createPet\(input as unknown as \w+, extraConfig\)/);
   });
 
-  it('should NOT cast non-union request bodies', async () => {
+  it('should cast all request bodies to api-client type', async () => {
     await generate(FIXTURE_PATH, outputDir);
 
     const content = fs.readFileSync(
       path.join(outputDir, 'pets', 'pets.service.ts'),
       'utf-8',
     );
-    // createPet has a non-union body — should use plain `input`, not `input as ...`
-    expect(content).not.toMatch(/input\s+as\s+/);
+    // All endpoints with request bodies should use `input as unknown as <type>` cast
+    const castCalls = [...content.matchAll(/input as unknown as \w+/g)];
+    expect(castCalls.length).toBeGreaterThan(0);
   });
 
   it('should call this.apiClient.owners.listOwners for owners service', async () => {

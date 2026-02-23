@@ -82,8 +82,8 @@ describe('generate with oneOf request body', () => {
       'utf-8',
     );
 
-    // The service should cast `input as CreateWalletInput` because the body is a union
-    expect(serviceContent).toMatch(/input as \w+/);
+    // The service should cast `input as unknown as CreateWalletInput` because the body is a union
+    expect(serviceContent).toMatch(/input as unknown as \w+/);
   });
 
   it('should import the api-client body type for union casts', async () => {

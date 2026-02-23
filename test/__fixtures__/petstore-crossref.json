@@ -1,0 +1,116 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Petstore with Cross-Schema Refs",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://petstore.example.com/api/v1"
+    }
+  ],
+  "paths": {
+    "/pets": {
+      "post": {
+        "tags": ["Pets"],
+        "operationId": "createPet",
+        "summary": "Create a pet",
+        "parameters": [
+          {
+            "name": "dryRun",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePetInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pet created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pet"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Pets"],
+        "operationId": "listPets",
+        "summary": "List pets",
+        "responses": {
+          "200": {
+            "description": "A list of pets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Pet"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Address": {
+        "type": "object",
+        "required": ["street", "city"],
+        "properties": {
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          }
+        }
+      },
+      "CreatePetInput": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        }
+      },
+      "Pet": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        }
+      }
+    }
+  }
+}

@@ -22,11 +22,11 @@ function buildApiMethodCall(
   if (allParams.length > 0) {
     args.push(`{ ${allParams.map((p) => p.name).join(', ')} }`);
   }
-  // 2. Body (if request body exists — cast to api-client type for union bodies)
+  // 2. Body (if request body exists — cast to api-client type)
   if (endpoint.requestBody) {
     args.push(
       endpoint.apiClientBodyTypeName
-        ? `input as ${endpoint.apiClientBodyTypeName}`
+        ? `input as unknown as ${endpoint.apiClientBodyTypeName}`
         : 'input',
     );
   }

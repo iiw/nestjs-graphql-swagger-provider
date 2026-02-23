@@ -52,16 +52,16 @@ export async function generate(input: string, output: string, options?: Generate
   const apiClientPath = path.join(outputDir, 'api-client.ts');
   const apiClientContent = fs.readFileSync(apiClientPath, 'utf-8');
 
-  // Enrich union request body endpoints with api-client body type names for casting
-  const unionEndpoints = spec.controllers.flatMap((c) =>
+  // Enrich request body endpoints with api-client body type names for casting
+  const bodyEndpoints = spec.controllers.flatMap((c) =>
     c.endpoints.filter(
-      (e) => e.requestBody?.unionMembers && e.requestBody.unionMembers.length > 0 && e.apiClientMethodName,
+      (e) => e.requestBody && e.apiClientMethodName,
     ),
   );
-  if (unionEndpoints.length > 0) {
-    const methodNames = unionEndpoints.map((e) => e.apiClientMethodName!);
+  if (bodyEndpoints.length > 0) {
+    const methodNames = bodyEndpoints.map((e) => e.apiClientMethodName!);
     const bodyTypeMap = extractApiClientBodyTypes(apiClientContent, methodNames);
-    for (const endpoint of unionEndpoints) {
+    for (const endpoint of bodyEndpoints) {
       const bodyType = bodyTypeMap.get(endpoint.apiClientMethodName!);
       if (bodyType) {
         endpoint.apiClientBodyTypeName = bodyType;

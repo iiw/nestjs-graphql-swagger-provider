@@ -23,11 +23,13 @@ function escapeStringLiteral(str: string): string {
 function buildResolverMethodParams(endpoint: ParsedEndpoint): {
   name: string;
   type: string;
+  hasQuestionToken?: boolean;
   decorators: { name: string; arguments: string[] }[];
 }[] {
   const params: {
     name: string;
     type: string;
+    hasQuestionToken?: boolean;
     decorators: { name: string; arguments: string[] }[];
   }[] = [];
 
@@ -59,11 +61,6 @@ function buildResolverMethodParams(endpoint: ParsedEndpoint): {
       type: param.required ? tsType : `${tsType} | null`,
       hasQuestionToken: !param.required,
       decorators: [{ name: 'Args', arguments: argsArgs }],
-    } as {
-      name: string;
-      type: string;
-      hasQuestionToken?: boolean;
-      decorators: { name: string; arguments: string[] }[];
     });
   }
 
@@ -74,6 +71,13 @@ function buildResolverMethodParams(endpoint: ParsedEndpoint): {
       decorators: [{ name: 'Args', arguments: [`'input'`] }],
     });
   }
+
+  // Sort: required params first, then optional (stable sort preserves relative order)
+  params.sort((a, b) => {
+    const aOpt = a.hasQuestionToken ? 1 : 0;
+    const bOpt = b.hasQuestionToken ? 1 : 0;
+    return aOpt - bOpt;
+  });
 
   return params;
 }

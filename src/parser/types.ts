@@ -157,7 +157,7 @@ export interface ParsedEndpoint {
   apiClientMethodName?: string;
   /** Actual namespace/module name from swagger-typescript-api generated client */
   apiClientNamespace?: string;
-  /** Body type name from api-client when request body is a union (oneOf/anyOf) — used to cast the flat-merged DTO */
+  /** Body type name from api-client for endpoints with a request body — used to cast the DTO to the api-client's expected type */
   apiClientBodyTypeName?: string;
 }
 

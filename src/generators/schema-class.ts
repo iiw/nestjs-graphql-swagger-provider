@@ -13,6 +13,21 @@ function needsExplicitType(prop: ParsedProperty, gqlType: string): boolean {
   return prop.isArray || gqlType === 'Float' || prop.type === 'enum' || prop.type === 'object';
 }
 
+function collectReferencedTypeNames(properties: ParsedProperty[]): Set<string> {
+  const names = new Set<string>();
+  for (const prop of properties) {
+    if (prop.type === 'object' && prop.typeName) {
+      names.add(prop.typeName);
+    }
+    if (prop.properties) {
+      for (const name of collectReferencedTypeNames(prop.properties)) {
+        names.add(name);
+      }
+    }
+  }
+  return names;
+}
+
 function extractNestedSchemas(schemas: Map<string, ParsedSchema>): Set<string> {
   const extracted = new Set<string>();
 
@@ -132,6 +147,23 @@ export function generateSchemaClasses(
     if (schema.extends && !schemas.has(schema.extends)) {
       const parent = globalSchemas.find((s) => s.name === schema.extends);
       if (parent) schemas.set(parent.name, parent);
+    }
+  }
+
+  // Resolve cross-schema type references (e.g. $ref to named schemas)
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const schema of schemas.values()) {
+      for (const typeName of collectReferencedTypeNames(schema.properties)) {
+        if (!schemas.has(typeName)) {
+          const referenced = globalSchemas.find((s) => s.name === typeName);
+          if (referenced) {
+            schemas.set(referenced.name, referenced);
+            changed = true;
+          }
+        }
+      }
     }
   }
 
