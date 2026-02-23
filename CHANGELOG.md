@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.0.15
+
+### Bug Fixes
+
+- **Cross-schema type references**: Properties referencing named schemas via `$ref` (e.g. `Address`) now have the referenced schema generated in the same output file. An iterative resolution step in `generateSchemaClasses()` pulls all transitively referenced schemas from the global registry.
+- **Resolver parameter ordering**: Required parameters (like `input`) are now sorted before optional parameters in resolver method signatures, fixing TypeScript errors when optional query params preceded a required request body.
+- **Service DTO type casting**: All request bodies are now cast to the api-client's expected type (`input as unknown as <ApiType>`) in generated services, not just union bodies. This fixes type mismatches caused by different enum types, optionality differences, and map type issues between the DTO and api-client types.
+
+### Tests
+
+- Added `petstore-crossref.json` fixture and integration tests for cross-schema `$ref` resolution and resolver parameter ordering.
+
 ## 0.0.14
 
 ### Features
