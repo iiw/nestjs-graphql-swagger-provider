@@ -111,8 +111,8 @@ describe('generate service Api client calls', () => {
       path.join(outputDir, 'pets', 'pets.service.ts'),
       'utf-8',
     );
-    // All request bodies are now cast to the api-client's expected type via unknown
-    expect(content).toMatch(/this\.apiClient\.pets\.createPet\(input as unknown as \w+, extraConfig\)/);
+    // All request bodies are now cast to the api-client's expected type
+    expect(content).toMatch(/this\.apiClient\.pets\.createPet\(input as \w+, extraConfig\)/);
   });
 
   it('should cast all request bodies to api-client type', async () => {
@@ -122,8 +122,8 @@ describe('generate service Api client calls', () => {
       path.join(outputDir, 'pets', 'pets.service.ts'),
       'utf-8',
     );
-    // All endpoints with request bodies should use `input as unknown as <type>` cast
-    const castCalls = [...content.matchAll(/input as unknown as \w+/g)];
+    // All endpoints with request bodies should use `input as <type>` cast
+    const castCalls = [...content.matchAll(/input as \w+/g)];
     expect(castCalls.length).toBeGreaterThan(0);
   });
 

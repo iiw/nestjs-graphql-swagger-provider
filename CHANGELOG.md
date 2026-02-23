@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.16
+
+### Improvements
+
+- **Type safety in generated services**: Removed unnecessary `as unknown` double-cast when passing request body to the API client. The generated code now uses a direct `as <ApiType>` assertion, which preserves TypeScript's structural compatibility check between the DTO and api-client types.
+
 ## 0.0.15
 
 ### Bug Fixes
