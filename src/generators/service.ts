@@ -26,7 +26,7 @@ function buildApiMethodCall(
   if (endpoint.requestBody) {
     args.push(
       endpoint.apiClientBodyTypeName
-        ? `input as unknown as ${endpoint.apiClientBodyTypeName}`
+        ? `input as ${endpoint.apiClientBodyTypeName}`
         : 'input',
     );
   }
