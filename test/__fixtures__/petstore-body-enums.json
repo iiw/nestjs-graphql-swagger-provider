@@ -1,0 +1,134 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Petstore with Body Enums",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://petstore.example.com/api/v1"
+    }
+  ],
+  "paths": {
+    "/cats": {
+      "post": {
+        "tags": ["Cats"],
+        "operationId": "createCat",
+        "summary": "Create a cat",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCatInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cat created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Cat"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dogs": {
+      "post": {
+        "tags": ["Dogs"],
+        "operationId": "createDog",
+        "summary": "Create a dog",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDogInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Dog created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dog"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CurrencyUnit": {
+        "type": "string",
+        "enum": ["usd", "eur"]
+      },
+      "Cat": {
+        "type": "object",
+        "required": ["id", "name", "unit"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/CurrencyUnit"
+          }
+        }
+      },
+      "Dog": {
+        "type": "object",
+        "required": ["id", "name", "unit"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/CurrencyUnit"
+          }
+        }
+      },
+      "CreateCatInput": {
+        "type": "object",
+        "required": ["name", "unit"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/CurrencyUnit"
+          }
+        }
+      },
+      "CreateDogInput": {
+        "type": "object",
+        "required": ["name", "unit"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "unit": {
+            "$ref": "#/components/schemas/CurrencyUnit"
+          }
+        }
+      }
+    }
+  }
+}

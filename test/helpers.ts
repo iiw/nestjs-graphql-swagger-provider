@@ -20,6 +20,7 @@ export const DESCRIPTIONS_FIXTURE_PATH = path.join(FIXTURES_DIR, 'petstore-descr
 export const DEPRECATED_FIXTURE_PATH = path.join(FIXTURES_DIR, 'petstore-deprecated.json');
 export const NESTED_FIXTURE_PATH = path.join(FIXTURES_DIR, 'petstore-nested.json');
 export const CROSSREF_FIXTURE_PATH = path.join(FIXTURES_DIR, 'petstore-crossref.json');
+export const BODY_ENUMS_FIXTURE_PATH = path.join(FIXTURES_DIR, 'petstore-body-enums.json');
 
 export function createOutputDir(prefix = 'nestjs-graphql-test-'): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));

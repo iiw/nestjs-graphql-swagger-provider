@@ -1,6 +1,6 @@
 import * as path from 'node:path';
 import { Project } from 'ts-morph';
-import type { ParsedController, ParsedEnum } from '../parser/types.js';
+import type { ParsedController, ParsedEnum, ParsedProperty } from '../parser/types.js';
 import { toPascalCase } from '../utils.js';
 
 export interface ApiClientEnum {
@@ -243,6 +243,133 @@ export function substituteParameterEnums(
             break;
           }
         }
+      }
+    }
+  }
+}
+
+/**
+ * Extract enum names referenced in a body type definition from the API client source.
+ * Uses brace-counting to extract the full definition, then checks which known
+ * API client enum names appear as whole words.
+ */
+export function extractBodyTypeEnumNames(
+  apiClientContent: string,
+  bodyTypeName: string,
+  apiClientEnums: ApiClientEnum[],
+): Set<string> {
+  const result = new Set<string>();
+
+  // Match export interface BodyType { or export type BodyType = {
+  const pattern = new RegExp(
+    `export\\s+(?:interface|type)\\s+${escapeRegex(bodyTypeName)}\\s*(?:=\\s*)?\\{`,
+  );
+  const match = pattern.exec(apiClientContent);
+  if (!match) return result;
+
+  // Brace-count to extract the full definition body
+  let depth = 1;
+  let pos = match.index + match[0].length;
+  const start = pos;
+  while (pos < apiClientContent.length && depth > 0) {
+    if (apiClientContent[pos] === '{') depth++;
+    else if (apiClientContent[pos] === '}') depth--;
+    pos++;
+  }
+  const bodyText = apiClientContent.slice(start, pos);
+
+  // Check which known enum names appear as whole words in the body
+  for (const ac of apiClientEnums) {
+    const wordPattern = new RegExp(`\\b${escapeRegex(ac.name)}\\b`);
+    if (wordPattern.test(bodyText)) {
+      result.add(ac.name);
+    }
+  }
+
+  return result;
+}
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * For each endpoint with a request body and an apiClientBodyTypeName, check if the
+ * body type definition in the API client references different enum names than what
+ * the parser matched. If so, substitute the enum names on the request body properties
+ * to match the API client's body type, ensuring casts like `input as BodyType` work.
+ */
+export function substituteBodyEnums(
+  controllers: ParsedController[],
+  apiClientContent: string,
+  apiClientEnums: ApiClientEnum[],
+  enumMatchResult: EnumMatchResult,
+): void {
+  for (const controller of controllers) {
+    for (const endpoint of controller.endpoints) {
+      if (!endpoint.requestBody || !endpoint.apiClientBodyTypeName) continue;
+
+      const bodyEnumNames = extractBodyTypeEnumNames(
+        apiClientContent,
+        endpoint.apiClientBodyTypeName,
+        apiClientEnums,
+      );
+      if (bodyEnumNames.size === 0) continue;
+
+      substituteEnumsInProperties(
+        endpoint.requestBody.properties,
+        bodyEnumNames,
+        apiClientEnums,
+        enumMatchResult,
+      );
+    }
+  }
+}
+
+function substituteEnumsInProperties(
+  properties: ParsedProperty[],
+  bodyEnumNames: Set<string>,
+  apiClientEnums: ApiClientEnum[],
+  enumMatchResult: EnumMatchResult,
+): void {
+  for (const prop of properties) {
+    // Recurse into nested properties
+    if (prop.properties) {
+      substituteEnumsInProperties(prop.properties, bodyEnumNames, apiClientEnums, enumMatchResult);
+    }
+
+    if (prop.type !== 'enum' || !prop.enumName || !prop.enumValues) continue;
+
+    // Check if the current mapping already points to a body-type enum
+    const currentMatch = enumMatchResult.matched.find(
+      (m) => m.parsedEnum.name === prop.enumName,
+    );
+    const currentApiClientEnum = currentMatch?.apiClientEnumName;
+    if (currentApiClientEnum && bodyEnumNames.has(currentApiClientEnum)) continue;
+
+    // Find the correct body-type enum by value match
+    for (const candidateName of bodyEnumNames) {
+      const candidate = apiClientEnums.find((ac) => ac.name === candidateName);
+      if (candidate && valuesMatch(prop.enumValues, candidate.values)) {
+        prop.enumName = candidateName;
+
+        // Ensure the body enum is exported in enums.ts
+        const alreadyExported = enumMatchResult.matched.some(
+          (m) =>
+            m.apiClientEnumName === candidateName &&
+            m.parsedEnum.name === candidateName,
+        );
+        if (!alreadyExported) {
+          enumMatchResult.matched.push({
+            parsedEnum: {
+              name: candidateName,
+              values: candidate.values as (string | number)[],
+              type: typeof candidate.values[0] === 'number' ? 'integer' : 'string',
+            },
+            apiClientEnumName: candidateName,
+          });
+        }
+        break;
       }
     }
   }
