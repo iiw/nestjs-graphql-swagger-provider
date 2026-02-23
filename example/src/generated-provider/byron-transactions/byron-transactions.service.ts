@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
-import { Api } from '../api-client';
+import { Api, PostByronTransactionFeePayload, PostByronTransactionPayload } from '../api-client';
 import { PostByronWalletsWalletIdPaymentFeesInput, PostByronWalletsWalletIdTransactionsInput } from './byron-transactions.dto';
 import { ListByronTransactionsOrder } from '../enums';
 
@@ -12,7 +12,7 @@ export class ByronTransactionsService {
   async postByronTransactionFee(walletId: string, input: PostByronWalletsWalletIdPaymentFeesInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('postByronTransactionFee', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.postByronTransactionFee({ walletId }, input, extraConfig);
+          const response = await this.apiClient.byronWallets.postByronTransactionFee({ walletId }, input as unknown as PostByronTransactionFeePayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -56,7 +56,7 @@ export class ByronTransactionsService {
   async postByronTransaction(walletId: string, input: PostByronWalletsWalletIdTransactionsInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('postByronTransaction', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.postByronTransaction({ walletId }, input, extraConfig);
+          const response = await this.apiClient.byronWallets.postByronTransaction({ walletId }, input as unknown as PostByronTransactionPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

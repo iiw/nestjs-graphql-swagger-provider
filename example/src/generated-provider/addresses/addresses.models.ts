@@ -3,6 +3,18 @@ import { ObjectType, Field, Float } from '@nestjs/graphql';
 import { GetAddressesAddressIdResponseAddressStyle, GetAddressesAddressIdResponseStakeReference, GetWalletsWalletIdAddressesResponseState } from '../enums';
 
 @ObjectType()
+export class GetAddressesAddressIdResponsePointer {
+  @Field(() => Float)
+  slot_num!: number;
+
+  @Field(() => Float)
+  transaction_index!: number;
+
+  @Field(() => Float)
+  output_index!: number;
+}
+
+@ObjectType()
 export class GetWalletsWalletIdAddressesResponse {
   @Field()
   id!: string;
@@ -31,8 +43,8 @@ export class GetAddressesAddressIdResponse {
   @Field()
   script_hash?: string;
 
-  @Field()
-  pointer?: string;
+  @Field(() => GetAddressesAddressIdResponsePointer)
+  pointer?: GetAddressesAddressIdResponsePointer;
 
   @Field({ description: 'Only for \'Icarus\' and \'Byron\' styles.' })
   address_root?: string;

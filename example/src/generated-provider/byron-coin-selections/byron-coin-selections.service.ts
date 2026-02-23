@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
-import { Api } from '../api-client';
+import { Api, ByronSelectCoinsPayload } from '../api-client';
 import { PostByronWalletsWalletIdCoinSelectionsRandomInput } from './byron-coin-selections.dto';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class ByronCoinSelectionsService {
   async byronSelectCoins(walletId: string, input: PostByronWalletsWalletIdCoinSelectionsRandomInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('byronSelectCoins', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.byronSelectCoins({ walletId }, input, extraConfig);
+          const response = await this.apiClient.byronWallets.byronSelectCoins({ walletId }, input as unknown as ByronSelectCoinsPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

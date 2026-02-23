@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
-import { Api } from '../api-client';
+import { Api, PostTransactionFeePayload, PostTransactionPayload } from '../api-client';
 import { PostWalletsWalletIdPaymentFeesInput, PostWalletsWalletIdTransactionsInput } from './transactions.dto';
 import { ListTransactionsOrder } from '../enums';
 
@@ -12,7 +12,7 @@ export class TransactionsService {
   async postTransactionFee(walletId: string, input: PostWalletsWalletIdPaymentFeesInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('postTransactionFee', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.postTransactionFee({ walletId }, input, extraConfig);
+          const response = await this.apiClient.wallets.postTransactionFee({ walletId }, input as unknown as PostTransactionFeePayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -56,7 +56,7 @@ export class TransactionsService {
   async postTransaction(walletId: string, input: PostWalletsWalletIdTransactionsInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('postTransaction', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.postTransaction({ walletId }, input, extraConfig);
+          const response = await this.apiClient.wallets.postTransaction({ walletId }, input as unknown as PostTransactionPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

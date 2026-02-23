@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
-import { Api } from '../api-client';
+import { Api, PutSettingsPayload } from '../api-client';
 import { PutSettingsInput } from './settings.dto';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class SettingsService {
   async putSettings(input: PutSettingsInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('putSettings', { input }) ?? {};
         try {
-          const response = await this.apiClient.settings.putSettings(input, extraConfig);
+          const response = await this.apiClient.settings.putSettings(input as unknown as PutSettingsPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

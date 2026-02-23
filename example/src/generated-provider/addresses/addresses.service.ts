@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
-import { Api } from '../api-client';
+import { Api, PostAnyAddressPayload } from '../api-client';
 import { PostAddressesInput } from './addresses.dto';
 import { StateEnum } from '../enums';
 
@@ -44,7 +44,7 @@ export class AddressesService {
   async postAnyAddress(input: PostAddressesInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('postAnyAddress', { input }) ?? {};
         try {
-          const response = await this.apiClient.addresses.postAnyAddress(input, extraConfig);
+          const response = await this.apiClient.addresses.postAnyAddress(input as unknown as PostAnyAddressPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
-import { Api } from '../api-client';
+import { Api, SelectCoinsPayload } from '../api-client';
 import { PostWalletsWalletIdCoinSelectionsRandomInput } from './coin-selections.dto';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class CoinSelectionsService {
   async selectCoins(walletId: string, input: PostWalletsWalletIdCoinSelectionsRandomInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('selectCoins', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.wallets.selectCoins({ walletId }, input, extraConfig);
+          const response = await this.apiClient.wallets.selectCoins({ walletId }, input as unknown as SelectCoinsPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

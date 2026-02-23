@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
-import { Api } from '../api-client';
+import { Api, PostExternalTransactionPayload } from '../api-client';
 import { PostProxyTransactionsInput } from './proxy.dto';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class ProxyService {
   async postExternalTransaction(input: PostProxyTransactionsInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('postExternalTransaction', { input }) ?? {};
         try {
-          const response = await this.apiClient.proxy.postExternalTransaction(input, extraConfig);
+          const response = await this.apiClient.proxy.postExternalTransaction(input as unknown as PostExternalTransactionPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

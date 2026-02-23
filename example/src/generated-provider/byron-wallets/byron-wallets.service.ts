@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
-import { Api } from '../api-client';
+import { Api, PostByronWalletPayload, PutByronWalletPayload, PutByronWalletPassphrasePayload } from '../api-client';
 import { PostByronWalletsInput, PutByronWalletsWalletIdInput, PutByronWalletsWalletIdPassphraseInput } from './byron-wallets.dto';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class ByronWalletsService {
   async postByronWallet(input: PostByronWalletsInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('postByronWallet', { input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.postByronWallet(input, extraConfig);
+          const response = await this.apiClient.byronWallets.postByronWallet(input as unknown as PostByronWalletPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -78,7 +78,7 @@ export class ByronWalletsService {
   async putByronWallet(walletId: string, input: PutByronWalletsWalletIdInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('putByronWallet', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.putByronWallet({ walletId }, input, extraConfig);
+          const response = await this.apiClient.byronWallets.putByronWallet({ walletId }, input as unknown as PutByronWalletPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -119,7 +119,7 @@ export class ByronWalletsService {
   async putByronWalletPassphrase(walletId: string, input: PutByronWalletsWalletIdPassphraseInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('putByronWalletPassphrase', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.putByronWalletPassphrase({ walletId }, input, extraConfig);
+          const response = await this.apiClient.byronWallets.putByronWalletPassphrase({ walletId }, input as unknown as PutByronWalletPassphrasePayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {

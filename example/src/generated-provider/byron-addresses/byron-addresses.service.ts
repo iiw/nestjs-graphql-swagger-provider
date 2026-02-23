@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Inject, Injectable, Optional, HttpException } from '@nestjs/common';
-import { Api } from '../api-client';
+import { Api, CreateAddressPayload, ImportAddressesPayload } from '../api-client';
 import { PostByronWalletsWalletIdAddressesInput, PutByronWalletsWalletIdAddressesInput } from './byron-addresses.dto';
 import { StateEnum1 } from '../enums';
 
@@ -31,7 +31,7 @@ export class ByronAddressesService {
   async createAddress(walletId: string, input: PostByronWalletsWalletIdAddressesInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('createAddress', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.createAddress({ walletId }, input, extraConfig);
+          const response = await this.apiClient.byronWallets.createAddress({ walletId }, input as unknown as CreateAddressPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
@@ -53,7 +53,7 @@ export class ByronAddressesService {
   async importAddresses(walletId: string, input: PutByronWalletsWalletIdAddressesInput): Promise<any> {
         const extraConfig = this.requestConfigFactory?.('importAddresses', { walletId, input }) ?? {};
         try {
-          const response = await this.apiClient.byronWallets.importAddresses({ walletId }, input, extraConfig);
+          const response = await this.apiClient.byronWallets.importAddresses({ walletId }, input as unknown as ImportAddressesPayload, extraConfig);
           return response.data;
         } catch (error: any) {
             if (error.response?.status === 400) {
