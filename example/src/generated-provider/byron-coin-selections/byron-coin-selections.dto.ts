@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { InputType, Field, Float } from '@nestjs/graphql';
-import { PostByronWalletsWalletIdCoinSelectionsRandomInputUnit } from '../enums';
+import { ByronSelectCoinsUnitEnum3 } from '../enums';
 
 @InputType()
 export class PostByronWalletsWalletIdCoinSelectionsRandomInputPayments {
@@ -16,8 +16,8 @@ export class PostByronWalletsWalletIdCoinSelectionsRandomInputPaymentsAmount {
   @Field(() => Float)
   quantity!: number;
 
-  @Field(() => PostByronWalletsWalletIdCoinSelectionsRandomInputUnit)
-  unit!: PostByronWalletsWalletIdCoinSelectionsRandomInputUnit;
+  @Field(() => ByronSelectCoinsUnitEnum3)
+  unit!: ByronSelectCoinsUnitEnum3;
 }
 
 @InputType()
