@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.17
+
+### Bug Fixes
+
+- **Body type enum mismatch in service casts**: Fixed TypeScript errors when generated services cast `input as <BodyType>` and the DTO's enum types differed nominally from the API client payload's enums. `substituteBodyEnums` now inspects the API client body type definition and remaps request body enum properties to the correct API client enums, ensuring structurally identical enums with different names are aligned correctly.
+
 ## 0.0.16
 
 ### Improvements
