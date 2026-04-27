@@ -149,6 +149,14 @@ function lowerSchemaToProperty(
 ): void {
   switch (node.kind) {
     case 'primitive': {
+      // integer is collapsed to number intentionally: TypeScript has a single
+      // numeric type so the IR stays TS-idiomatic. The trade-off is that
+      // model/DTO properties typed as integer in OpenAPI become Float in the
+      // generated GraphQL schema (number → Float in graphqlTypeForProperty).
+      // This is by design — the GraphQL layer is a proxy and Float is a safe
+      // superset of Int. Callers that need exact Int mapping for top-level
+      // response scalars use graphqlScalarForPrimitive, which preserves the
+      // integer → Int distinction.
       result.type = node.type === 'integer' ? 'number' : node.type;
       break;
     }

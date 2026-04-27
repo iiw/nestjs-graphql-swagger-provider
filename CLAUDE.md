@@ -78,6 +78,7 @@ The generated code requires these packages in the consuming project:
 
 These features have been evaluated and deliberately excluded:
 
+- **`integer` properties emit `Float`, not `Int`** — the internal IR collapses OpenAPI `integer` to the TypeScript `number` type (there is no separate integer type in TS). `graphqlTypeForProperty` then maps `number` → `Float`. `Float` is a safe superset of `Int` and the GraphQL layer is a proxy, so this is intentional. Top-level response scalars are handled separately via `graphqlScalarForPrimitive`, which does preserve `integer` → `Int` for primitive return types.
 - **Default values** (`default` in OpenAPI) — the REST API is the source of truth for defaults. Duplicating them in the GraphQL layer risks divergence and masks missing data.
 - **Validation decorators** (class-validator) — adds a runtime dependency and duplicates validation already performed by the underlying REST API. The GraphQL layer is a proxy, not the validation boundary.
 - **Discriminator-based union codegen** — the IR captures discriminator info, but generating `createUnionType()` with `resolveType` adds significant complexity for a niche feature. The current flat-merge of oneOf/anyOf variants (all properties optional) is sufficient.
