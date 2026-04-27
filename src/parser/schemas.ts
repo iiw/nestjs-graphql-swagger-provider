@@ -46,6 +46,7 @@ export function extractSchema(
       const result: ParsedSchema = {
         name,
         properties: extractProperties(items, name, schemaRegistry),
+        isArray: true,
       };
       applyCompositionMetadata(result, items, schemaRegistry);
       return result;

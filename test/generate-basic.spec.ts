@@ -112,6 +112,17 @@ describe('generate', () => {
     expect(resolverContent).toContain("from '@nestjs/graphql'");
   });
 
+  it('should generate array return type [Model] for endpoints returning array of objects', async () => {
+    await generate(FIXTURE_PATH, outputDir);
+
+    const resolverContent = fs.readFileSync(
+      path.join(outputDir, 'pets', 'pets.resolver.ts'),
+      'utf-8',
+    );
+
+    expect(resolverContent).toContain('@Query(() => [Pet]');
+  });
+
   it('should generate module with @Module decorator', async () => {
     await generate(FIXTURE_PATH, outputDir);
 

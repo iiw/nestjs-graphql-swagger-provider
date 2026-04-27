@@ -147,7 +147,9 @@ export function generateResolver(
         ? `() => [${scalar}]`
         : `() => ${scalar}`;
     } else if (endpoint.responseSchema) {
-      returnTypeArg = `() => ${endpoint.responseSchema.name}`;
+      returnTypeArg = endpoint.responseSchema.isArray
+        ? `() => [${endpoint.responseSchema.name}]`
+        : `() => ${endpoint.responseSchema.name}`;
     } else {
       returnTypeArg = '() => Boolean';
     }
