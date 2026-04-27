@@ -2,13 +2,14 @@
 
 import { Command } from 'commander';
 import { generate } from '../generate.js';
+import { version } from '../../package.json';
 
 const program = new Command();
 
 program
   .name('nestjs-graphql-swagger-provider')
   .description('Generate NestJS GraphQL modules from a Swagger/OpenAPI spec')
-  .version('0.0.1');
+  .version(version);
 
 program
   .command('generate')
