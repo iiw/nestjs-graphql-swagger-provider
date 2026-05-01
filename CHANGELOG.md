@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.0.18
+
+### Bug Fixes
+
+- **Array-of-objects response types**: Endpoints returning `type: array` with object items now correctly generate `@Query(() => [Model])` instead of `@Query(() => Model)`.
+- **CLI version resolution**: The `--version` flag now reads the version from `package.json` instead of a hardcoded string.
+
+### Documentation
+
+- **Integer → Float mapping**: Documented the intentional behavior where OpenAPI `integer` properties emit GraphQL `Float` (not `Int`), since the IR collapses `integer` to the TypeScript `number` type.
+
 ## 0.0.17
 
 ### Bug Fixes
